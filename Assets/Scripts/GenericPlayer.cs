@@ -5,9 +5,14 @@ using UnityEngine;
 public abstract class GenericPlayer
 {
     public float x, y, vx, vy;
-    public int life;
+    public int gameID, life;
     public bool onFloor;
-    public int gameID;
+
+    // Performance stats:
+    public int shotsFired,
+        shotsHit,
+        playersKilled,
+        frameOfDeath; // if they win, frameOfDeath is the last frame of the game + 1
 
     public void Spawn(float x, float y, int gameID)
     {
@@ -18,6 +23,12 @@ public abstract class GenericPlayer
         vy = 0;
         life = 3;
         onFloor = false;
+
+        // Stats
+        shotsFired = 0;
+        shotsHit = 0;
+        playersKilled = 0;
+        frameOfDeath = 0;
     }
 
     public abstract GameInput GetInput(Game game);

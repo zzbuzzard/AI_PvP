@@ -98,19 +98,46 @@ public class Game
         int space = xsize / players.Count;
         for (int i=0; i<players.Count; i++)
         {
+            // Note ID is always index
             players[i].Spawn(space * i, 1.0f, i);
         }
     }
 
-    public void Step()
+    // Returns true iff the game has ended
+    public bool Step()
     {
-        // 1) get inputs
+        bool gameOver = true;
+        GenericPlayer winner = null;
+        // Check if the game is over
+        for (int i=0; i<players.Count; i++)
+        {
+            if (players[i].life > 0)
+            {
+                if (winner != null)
+                {
+                    gameOver = false;
+                    break;
+                }
+                winner = players[i];
+            }
+        }
+        if (gameOver)
+        {
+            if (winner != null) winner.frameOfDeath = framesPassed;
+            return true;
+        }
+
+        // Get all players' inputs.
+        // It's important this happens before any movement takes place, so that the order of the loop is irrelevant
         for (int i=0; i<players.Count; i++) {
+            if (players[i].life <= 0) continue; // Ignore the dead
             inputs[i] = players[i].GetInput(this);
         }
 
-        // 2) move players - do NOT question this code as it seems to work
+        // Move players, collide with walls
         for (int i = 0; i < players.Count; i++) {
+            if (players[i].life <= 0) continue; // Ignore the dead
+
             players[i].vx = inputs[i].hdir * playerMoveSpeed;
 
             if (players[i].onFloor)
@@ -193,19 +220,22 @@ public class Game
             }
 
 
+            // Shoot
             if (inputs[i].shoot)
             {
                 float vx = bulletMoveSpeed * (float)Math.Cos(inputs[i].shootAngle);
                 float vy = bulletMoveSpeed * (float)Math.Sin(inputs[i].shootAngle);
 
                 bullets.Add(new Bullet(players[i].gameID, players[i].x, players[i].y, vx, vy));
+
+                players[i].shotsFired++;
             }
 
         }
 
         bool hit = false;
 
-        // 3) move bullets, check for bullet collisions
+        // Move bullets, check for bullet collisions (with walls and players)
         for (int i=0; i<bullets.Count; i++)
         {
             bullets[i].x += bullets[i].vx * dt;
@@ -213,10 +243,10 @@ public class Game
 
             hit = false;
 
-            // TODO: Check for player collision
             for (int j=0; j<players.Count; j++)
             {
-                if (players[j].gameID == bullets[i].shooterID) continue; // Don't collide with shooter
+                if (players[j].gameID == bullets[i].shooterID
+                    || players[j].life <= 0) continue; // Don't collide with shooter or dead people
 
                 // Check for collision
                 if (players[j].x - playerSize2 / 2.0f <= bullets[i].x &&
@@ -226,8 +256,19 @@ public class Game
                 {
                     hit = true;
 
-                    // TODO: Increase shooter's score
-                    // TODO: Decrease hit person's life
+                    // Increment shooter's counter
+                    players[bullets[i].shooterID].shotsHit += 1;
+
+                    // Deal damage
+                    players[j].life -= 1;
+
+                    // If it was a kill, increase the shooter's counter
+                    if (players[j].life <= 0)
+                    {
+                        players[j].frameOfDeath = framesPassed;
+                        players[bullets[i].shooterID].playersKilled += 1;
+                    }
+
                 }
             }
 
@@ -241,6 +282,7 @@ public class Game
         }
 
         framesPassed++;
+        return false;
     }
 }
 
