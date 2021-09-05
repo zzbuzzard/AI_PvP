@@ -9,12 +9,22 @@ public class HumanPlayer : GenericPlayer
         sbyte h = 0;
         bool jump = false;
         bool shoot = false;
+        float angle = 0.0f;
 
         if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) h--;
         if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) h++;
-        if (Input.GetKey(KeyCode.Space)) jump = true;
-        if (Input.GetMouseButtonDown(0)) shoot = true;
+        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W)) jump = true;
+        if (GameDisplay.mouseClicked)
+        {
+            GameDisplay.mouseClicked = false;
 
-        return new GameInput(h, jump, shoot);
+            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 d = mousePos - GameDisplay.Translate(new Vector2(x, y));
+            angle = Mathf.Atan2(d.y, d.x);
+
+            shoot = true;
+        }
+
+        return new GameInput(h, jump, shoot, angle);
     }
 }

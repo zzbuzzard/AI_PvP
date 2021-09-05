@@ -7,9 +7,11 @@ public abstract class GenericPlayer
     public float x, y, vx, vy;
     public int life;
     public bool onFloor;
+    public int gameID;
 
-    public void Spawn(float x, float y)
+    public void Spawn(float x, float y, int gameID)
     {
+        this.gameID = gameID;
         this.x = x;
         this.y = y;
         vx = 0;
