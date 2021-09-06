@@ -42,11 +42,13 @@ public class Bullet
 
 public class Game
 {
-    const float dt = 1 / 30.0f;
+    public const float spf = 1 / 30.0f; // Seconds per frame
     const float gravity = 5.0f;
     const float playerJumpVelocity = 5.0f;
     const float playerMoveSpeed = 2.0f;
     const float bulletMoveSpeed = 5.0f;
+
+    const float maxMatchTime = 60.0f; // Max 1min matches
 
     public static float playerSize = 0.8f, playerSize2 = 1.0f;
 
@@ -54,7 +56,7 @@ public class Game
     // (0, 0) is the bottom left.
     // All squares are centered, so this means there is a block with center at (0, 0)
     private MapBlock[,] map;
-    public static int xsize { get; private set; } = 15;
+    public static int xsize { get; private set; } = 40;
     public static int ysize { get; private set; } = 10;
 
     int framesPassed;
@@ -63,9 +65,15 @@ public class Game
     List<GenericPlayer> players;
     GameInput[] inputs;
 
+    public static void SimulateGame(List<GenericPlayer> p)
+    {
+        Game g = new Game(p);
+        while (!g.Step()) { }
+    }
+
     public MapBlock GetTile(int x, int y)
     {
-        if (x < 0 || x >= xsize || y < 0 || y >= ysize) return MapBlock.EMPTY;
+        if (x < 0 || x >= xsize || y < 0 || y >= ysize) return MapBlock.WALL;
         return map[x, y];
     }
 
@@ -89,17 +97,24 @@ public class Game
             }
         }
 
-        map[4, 1] = MapBlock.WALL;
-        map[8, 2] = MapBlock.WALL;
-        map[10, 4] = MapBlock.WALL;
+        // map size 80
+        // 4 players
+        // 10, 30, 50, 70
+        // walls at 20, 40, 60
 
         // Initiate players evenly spaced at (x, 1)
 
-        int space = xsize / players.Count;
+        float spacing = xsize / players.Count;
         for (int i=0; i<players.Count; i++)
         {
             // Note ID is always index
-            players[i].Spawn(space * i, 1.0f, i);
+            players[i].Spawn(spacing * (i+0.5f), 1.0f, i);
+
+            // Walls between em
+            if (i > 0)
+            {
+                map[(int)(spacing * i), 1] = MapBlock.WALL;
+            }
         }
     }
 
@@ -121,6 +136,14 @@ public class Game
                 winner = players[i];
             }
         }
+
+        // If the match has been going on for more than (maxMatchTime) seconds, it's over
+        if (framesPassed > maxMatchTime / spf)
+        {
+            gameOver = true;
+            winner = null;
+        }
+
         if (gameOver)
         {
             if (winner != null) winner.frameOfDeath = framesPassed;
@@ -150,15 +173,15 @@ public class Game
             }
             else
             {
-                players[i].vy -= gravity * dt;
+                players[i].vy -= gravity * spf;
             }
 
 
-            players[i].x += players[i].vx * dt;
+            players[i].x += players[i].vx * spf;
 
             float xmin = players[i].x - playerSize2 / 2.0f;
             float xmax = players[i].x + playerSize2 / 2.0f;
-            int x1 = (int)(xmin + 0.5f);
+            int x1 = (int)Math.Floor(xmin + 0.5f);             // Prevents edge case with (int)(-0.5) = 0
             int x2 = (int)(xmax + 0.5f);
 
             float ymin = players[i].y - playerSize / 2.0f;
@@ -183,7 +206,7 @@ public class Game
                 }
             }
 
-            players[i].y += players[i].vy * dt;
+            players[i].y += players[i].vy * spf;
 
             xmin = players[i].x - playerSize / 2.0f;
             xmax = players[i].x + playerSize / 2.0f;
@@ -238,8 +261,8 @@ public class Game
         // Move bullets, check for bullet collisions (with walls and players)
         for (int i=0; i<bullets.Count; i++)
         {
-            bullets[i].x += bullets[i].vx * dt;
-            bullets[i].y += bullets[i].vy * dt;
+            bullets[i].x += bullets[i].vx * spf;
+            bullets[i].y += bullets[i].vy * spf;
 
             hit = false;
 

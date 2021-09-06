@@ -10,9 +10,9 @@ public abstract class GenericPlayer
 
     // Performance stats:
     public int shotsFired,
-        shotsHit,
-        playersKilled,
-        frameOfDeath; // if they win, frameOfDeath is the last frame of the game + 1
+               shotsHit,
+               playersKilled,
+               frameOfDeath;   // if they win, frameOfDeath is the last frame of the game + 1
 
     public void Spawn(float x, float y, int gameID)
     {

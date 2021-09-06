@@ -216,6 +216,7 @@ GameObject:
   m_Component:
   - component: {fileID: 888700824}
   - component: {fileID: 888700823}
+  - component: {fileID: 888700825}
   m_Layer: 0
   m_Name: Controller
   m_TagString: Untagged
@@ -238,6 +239,7 @@ MonoBehaviour:
   playerPrefab: {fileID: 7968525866773949214, guid: 50846b1120e70d94baa5acfcb0fd3b01, type: 3}
   wallPrefab: {fileID: 4109462202636544879, guid: 17cd57e10f8268e46baec80f83899b4b, type: 3}
   bulletPrefab: {fileID: 8573748452627571583, guid: 27ac518e8e40847458a016d74f1b7ef8, type: 3}
+  gameInProgress: 0
 --- !u!4 &888700824
 Transform:
   m_ObjectHideFlags: 0
@@ -252,3 +254,16 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &888700825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888700822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 635171babc9949045ad22bf9538c496f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  d: {fileID: 888700823}
