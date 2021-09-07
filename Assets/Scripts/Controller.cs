@@ -11,9 +11,9 @@ public class Controller : MonoBehaviour
     {
         List<AIPlayer> pop = new List<AIPlayer>();
 
-        for (int i=0; i<50; i++)
+        for (int i=0; i<100; i++)
         {
-            pop.Add(new AIPlayer(Random.Range(10, 10000)));
+            pop.Add(new AIPlayer());
         }
 
         r = new RankedGenetic(pop);
@@ -24,14 +24,17 @@ public class Controller : MonoBehaviour
     {
         if (!d.gameInProgress)
         {
+            print("Step");
             r.Increment();
             t++;
-            if (t % 200 == 0)
+            if (t % 100 == 0)
             {
                 List<GenericPlayer> ps = r.GetPopulation();
                 List<GenericPlayer> qs = new List<GenericPlayer>();
-                for (int i = 0; i < RankedGenetic.FFA_size; i++)
+                for (int i = 0; i < RankedGenetic.FFA_size - 1; i++)
                     qs.Add(ps[i]);
+
+                qs.Add(new HumanPlayer());
 
                 d.Simulate(qs);
             }

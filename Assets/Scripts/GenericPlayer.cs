@@ -4,9 +4,11 @@ using UnityEngine;
 
 public abstract class GenericPlayer
 {
+    public const int maxlife = 3;
     public float x, y, vx, vy;
     public int gameID, life;
     public bool onFloor;
+    public int lastShootFrame;
 
     // Performance stats:
     public int shotsFired,
@@ -21,8 +23,10 @@ public abstract class GenericPlayer
         this.y = y;
         vx = 0;
         vy = 0;
-        life = 3;
+        life = maxlife;
         onFloor = false;
+
+        lastShootFrame = -10;
 
         // Stats
         shotsFired = 0;

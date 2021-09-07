@@ -15,11 +15,11 @@ public abstract class Genetic
     {
         float accuracy = p.shotsHit / (float)(p.shotsFired == 0 ? 1 : p.shotsFired);
 
-        return p.life * p.life                      // 9 points for a perfect run, 4 for one hit, 1 for two hits
-             + p.frameOfDeath * Game.spf / 12.0f    // number of seconds alive;  one minute is 5 points
+        return p.life                               // 3 points for a perfect run, 2 for one hit, 1 for two hits
+//             + p.frameOfDeath * Game.spf / 20.0f    // number of seconds alive;  one minute is 3 points
              + p.shotsHit * 5                       // 5 points per hit shot
              + p.playersKilled * 5                  // bonus 5 points for a kill
-             + 5 * accuracy                         // bonus 5 points for 100% accuracy
+             + 3 * accuracy                         // bonus 3 points for 100% accuracy
              ;
     }
 }

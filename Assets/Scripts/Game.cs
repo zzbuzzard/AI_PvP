@@ -46,9 +46,12 @@ public class Game
     const float gravity = 5.0f;
     const float playerJumpVelocity = 5.0f;
     const float playerMoveSpeed = 2.0f;
-    const float bulletMoveSpeed = 5.0f;
+    const float bulletMoveSpeed = 10.0f; // previously 5
 
-    const float maxMatchTime = 60.0f; // Max 1min matches
+    const float reloadTime = 0.5f;
+    const int frameReloadTime = (int)(reloadTime / spf);
+
+    const float maxMatchTime = 50.0f; // Max 50sec matches
 
     public static float playerSize = 0.8f, playerSize2 = 1.0f;
 
@@ -59,10 +62,10 @@ public class Game
     public static int xsize { get; private set; } = 40;
     public static int ysize { get; private set; } = 10;
 
-    int framesPassed;
+    public int framesPassed { get; private set; }
 
     public List<Bullet> bullets;
-    List<GenericPlayer> players;
+    public List<GenericPlayer> players { get; private set; }
     GameInput[] inputs;
 
     public static void SimulateGame(List<GenericPlayer> p)
@@ -104,11 +107,15 @@ public class Game
 
         // Initiate players evenly spaced at (x, 1)
 
+        List<int> spawnOrder = new List<int>();
+        for (int i = 0; i < players.Count; i++) spawnOrder.Add(i);
+        Util.Shuffle(spawnOrder);
+
         float spacing = xsize / players.Count;
         for (int i=0; i<players.Count; i++)
         {
             // Note ID is always index
-            players[i].Spawn(spacing * (i+0.5f), 1.0f, i);
+            players[spawnOrder[i]].Spawn(spacing * (i+0.5f), 1.0f, i);
 
             // Walls between em
             if (i > 0)
@@ -140,12 +147,15 @@ public class Game
         // If the match has been going on for more than (maxMatchTime) seconds, it's over
         if (framesPassed > maxMatchTime / spf)
         {
+            // TODO: Set all frameOfDeath
             gameOver = true;
             winner = null;
         }
 
         if (gameOver)
         {
+            // TODO: Produce ranking for players
+            // NOTE: Draws should go down, so if 4 people survive at the end then they are all 4th, one person was 5th
             if (winner != null) winner.frameOfDeath = framesPassed;
             return true;
         }
@@ -246,12 +256,17 @@ public class Game
             // Shoot
             if (inputs[i].shoot)
             {
-                float vx = bulletMoveSpeed * (float)Math.Cos(inputs[i].shootAngle);
-                float vy = bulletMoveSpeed * (float)Math.Sin(inputs[i].shootAngle);
+                if (players[i].lastShootFrame < framesPassed - frameReloadTime)
+                {
+                    players[i].lastShootFrame = framesPassed;
 
-                bullets.Add(new Bullet(players[i].gameID, players[i].x, players[i].y, vx, vy));
+                    float vx = bulletMoveSpeed * (float)Math.Cos(inputs[i].shootAngle);
+                    float vy = bulletMoveSpeed * (float)Math.Sin(inputs[i].shootAngle);
 
-                players[i].shotsFired++;
+                    bullets.Add(new Bullet(players[i].gameID, players[i].x, players[i].y, vx, vy));
+
+                    players[i].shotsFired++;
+                }
             }
 
         }
@@ -261,6 +276,8 @@ public class Game
         // Move bullets, check for bullet collisions (with walls and players)
         for (int i=0; i<bullets.Count; i++)
         {
+            bullets[i].vy -= gravity * spf;
+
             bullets[i].x += bullets[i].vx * spf;
             bullets[i].y += bullets[i].vy * spf;
 
