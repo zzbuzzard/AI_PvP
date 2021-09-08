@@ -13,6 +13,7 @@ public class AIPlayer : GenericPlayer
     //   - Position (2)
     //   - Health (1)
     //   - Velocity (2)
+    //   - On floor (1)
 
     //  Per player (reserved for FFA_size-1):
     //   - Position              (2)
@@ -35,25 +36,26 @@ public class AIPlayer : GenericPlayer
     const int gridX = 2;
     const int gridY = 2;
 
-    const int inputsGrid = (2*gridX+1) * (2*gridY+1) * 2;
-    const int inputsMe = 5;
+    const int inputsGrid = (2*gridX+1) * (2*gridY+1);
+    const int inputsMe = 6;
     const int inputsPerPlayer = 9;
     const int inputsPerBullet = 8;
 
     const int numPlayers = RankedGenetic.FFA_size - 1;
-    const int numBullets = 6;
+    const int numBullets = 5;
 
     const int numInputs = inputsGrid + inputsMe + inputsPerPlayer * numPlayers + inputsPerBullet * numBullets;
 
     // Outputs:
-    //  left (1)
-    //  right (1)
+    //  left right (2)
     //  shoot (1)
     //  angle (2)
     //  jump (1)
     const int numOutputs = 6;
 
-    static int[] levels = new int[]{ numInputs, 10, numOutputs };
+    //static int[] levels = new int[]{ numInputs, 15, numOutputs };
+    static int[] levels = new int[] { numInputs, 16, 10, numOutputs };
+    static int[] linear = new int[] { 0, 4, 3, 0 };
 
     // Input every 4 frames (that is, 7 times a sec)
     const int whichFrameInput = 4;
@@ -63,7 +65,7 @@ public class AIPlayer : GenericPlayer
     NeuralNet mnet;
     GameInput prevInput = new GameInput(0, false, false, 0.0f);
 
-    public AIPlayer() : this(new NeuralNet(levels))
+    public AIPlayer() : this(new NeuralNet(levels, linear))
     {
     }
 
@@ -96,7 +98,7 @@ public class AIPlayer : GenericPlayer
                 {
                     int num = (game.GetTile(i, j) == MapBlock.EMPTY ? 0 : 1);
 
-                    int index = 2 * ((i - xpos + gridX) * (gridY * 2 + 1) + (j - ypos + gridY)) + num;
+                    int index = (i - xpos + gridX) * (gridY * 2 + 1) + (j - ypos + gridY);
 
                     mnet.nodes[0][index + offset] = 1.0f;
                 }
@@ -111,11 +113,12 @@ public class AIPlayer : GenericPlayer
             //   - Position (2)
             //   - Health (1)
             //   - Velocity (2)
-            mnet.nodes[0][offset] = x / Game.xsize;
+            mnet.nodes[0][offset]     = x / Game.xsize;
             mnet.nodes[0][offset + 1] = y / Game.ysize;
             mnet.nodes[0][offset + 2] = life / (float)maxlife;
             mnet.nodes[0][offset + 3] = vx;
             mnet.nodes[0][offset + 4] = vy;
+            mnet.nodes[0][offset + 5] = onFloor?1.0f:0.0f;
 
             offset += inputsMe;
         }
@@ -172,6 +175,7 @@ public class AIPlayer : GenericPlayer
                 else
                 {
                     mnet.nodes[0][offset] = 0.0f;
+                    //mnet.nodes[0][offset + 6] = 100.0f; Set distance to very large
                 }
 
                 offset += inputsPerPlayer;
@@ -185,6 +189,8 @@ public class AIPlayer : GenericPlayer
 
             for (int i = 0; i < game.bullets.Count; i++)
             {
+                if (game.bullets[i].shooterID == gameID) continue; // Don't see my own bullets, as this isn't much use
+
                 float dist = Vector2.Distance(new Vector2(x, y),
                     new Vector2(game.bullets[i].x, game.bullets[i].y));
 
@@ -230,7 +236,6 @@ public class AIPlayer : GenericPlayer
 
         // Outputs:
         //  left (1)
-        //  right (1)
         //  shoot (1)
         //  angle (2)
         //  jump (1)
@@ -249,11 +254,11 @@ public class AIPlayer : GenericPlayer
              bjump = false;
         sbyte hor = 0;
 
-        if (left > 0.5f) hor--;
-        if (right > 0.5f) hor++;
+        if (left > 1.0f) hor--;
+        if (right > 1.0f) hor++;
 
-        if (shoot > 0.5f) bshoot = true;
-        if (jump > 0.5f) bjump = true;
+        if (shoot > 1.0f) bshoot = true;
+        if (jump > 1.0f) bjump = true;
 
         GameInput g = new GameInput(hor, bjump, bshoot, angle);
         prevInput = g;
@@ -265,7 +270,7 @@ public class AIPlayer : GenericPlayer
     const float mutateAmount = 2.0f;
     public AIPlayer Breed(AIPlayer otherParent)
     {
-        NeuralNet p = new NeuralNet(levels);
+        NeuralNet p = new NeuralNet(levels, linear);
         float a;
         for (int i=0; i<p.weights.Length; i++)
         {

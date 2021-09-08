@@ -30,7 +30,7 @@ public class RankedGenetic : Genetic
     const float scorePerPop = 1.0f;
     const float minContribute = 0.25f;
     const float threshold = 0.4f;
-    public const int FFA_size = 5;
+    public const int FFA_size = 8;
 
     public RankedGenetic(List<AIPlayer> initialPopulation)
     {

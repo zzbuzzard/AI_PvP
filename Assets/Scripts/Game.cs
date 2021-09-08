@@ -28,15 +28,16 @@ public struct GameInput
 
 public class Bullet
 {
-    public int shooterID;
+    public int shooterID, life;
     public float x, y, vx, vy;
-    public Bullet(int shooterID, float x, float y, float vx, float vy)
+    public Bullet(int shooterID, float x, float y, float vx, float vy, int life)
     {
         this.shooterID = shooterID;
         this.x = x;
         this.y = y;
         this.vx = vx;
         this.vy = vy;
+        this.life = life;
     }
 }
 
@@ -45,13 +46,14 @@ public class Game
     public const float spf = 1 / 30.0f; // Seconds per frame
     const float gravity = 5.0f;
     const float playerJumpVelocity = 5.0f;
-    const float playerMoveSpeed = 2.0f;
-    const float bulletMoveSpeed = 10.0f; // previously 5
+    const float playerMoveSpeed = 2.5f;
+    const float bulletMoveSpeed = 12.0f; // previously 5
+    const int bulletFrameLife = 30;
 
-    const float reloadTime = 0.5f;
+    const float reloadTime = 0.8f;
     const int frameReloadTime = (int)(reloadTime / spf);
 
-    const float maxMatchTime = 50.0f; // Max 50sec matches
+    public float maxMatchTime = 50.0f; // Max 50sec matches
 
     public static float playerSize = 0.8f, playerSize2 = 1.0f;
 
@@ -59,7 +61,7 @@ public class Game
     // (0, 0) is the bottom left.
     // All squares are centered, so this means there is a block with center at (0, 0)
     private MapBlock[,] map;
-    public static int xsize { get; private set; } = 40;
+    public static int xsize { get; private set; } = 40;  // 40 x 10 works well with 5 - 8 players
     public static int ysize { get; private set; } = 10;
 
     public int framesPassed { get; private set; }
@@ -118,10 +120,10 @@ public class Game
             players[spawnOrder[i]].Spawn(spacing * (i+0.5f), 1.0f, i);
 
             // Walls between em
-            if (i > 0)
-            {
-                map[(int)(spacing * i), 1] = MapBlock.WALL;
-            }
+            //if (i > 0)
+            //{
+            //    map[(int)(spacing * i), 1] = MapBlock.WALL;
+            //}
         }
     }
 
@@ -147,7 +149,15 @@ public class Game
         // If the match has been going on for more than (maxMatchTime) seconds, it's over
         if (framesPassed > maxMatchTime / spf)
         {
-            // TODO: Set all frameOfDeath
+            for (int i=0; i<players.Count; i++)
+            {
+                if (players[i].life > 0)
+                {
+                    players[i].frameOfDeath = framesPassed;
+                    players[i].endType = EndType.TIMEOUT;
+                }
+            }
+
             gameOver = true;
             winner = null;
         }
@@ -156,7 +166,34 @@ public class Game
         {
             // TODO: Produce ranking for players
             // NOTE: Draws should go down, so if 4 people survive at the end then they are all 4th, one person was 5th
-            if (winner != null) winner.frameOfDeath = framesPassed;
+            if (winner != null)
+            {
+                winner.frameOfDeath = framesPassed;
+                winner.endType = EndType.WON;
+            }
+
+            // Now, for each player, work out how many players died before them
+            List<Pair<int, int>> deathTimes = new List<Pair<int, int>>();
+            for (int i=0; i<players.Count; i++)
+            {
+                deathTimes.Add(new Pair<int,int>(players[i].frameOfDeath, i));
+            }
+            deathTimes.Sort();
+
+            int diedBefore = 0;
+            for (int i=0; i<players.Count; i++)
+            {
+                if (i > 0)
+                {
+                    if (deathTimes[i - 1].fst != diedBefore)
+                    {
+                        diedBefore = i;
+                    }
+                    // otherwise, the same as before
+                }
+                players[deathTimes[i].snd].diedBefore = diedBefore;
+            }
+
             return true;
         }
 
@@ -263,7 +300,7 @@ public class Game
                     float vx = bulletMoveSpeed * (float)Math.Cos(inputs[i].shootAngle);
                     float vy = bulletMoveSpeed * (float)Math.Sin(inputs[i].shootAngle);
 
-                    bullets.Add(new Bullet(players[i].gameID, players[i].x, players[i].y, vx, vy));
+                    bullets.Add(new Bullet(players[i].gameID, players[i].x, players[i].y, vx, vy, bulletFrameLife));
 
                     players[i].shotsFired++;
                 }
@@ -276,39 +313,49 @@ public class Game
         // Move bullets, check for bullet collisions (with walls and players)
         for (int i=0; i<bullets.Count; i++)
         {
-            bullets[i].vy -= gravity * spf;
+            //bullets[i].vy -= gravity * spf;
 
             bullets[i].x += bullets[i].vx * spf;
             bullets[i].y += bullets[i].vy * spf;
 
             hit = false;
 
-            for (int j=0; j<players.Count; j++)
+            bullets[i].life -= 1;
+
+            if (bullets[i].life <= 0)
             {
-                if (players[j].gameID == bullets[i].shooterID
-                    || players[j].life <= 0) continue; // Don't collide with shooter or dead people
-
-                // Check for collision
-                if (players[j].x - playerSize2 / 2.0f <= bullets[i].x &&
-                    players[j].x + playerSize2 / 2.0f >= bullets[i].x &&
-                    players[j].y - playerSize2 / 2.0f <= bullets[i].y &&
-                    players[j].y + playerSize2 / 2.0f >= bullets[i].y)
+                hit = true;
+            }
+            else
+            {
+                // Check for player collision
+                for (int j = 0; j < players.Count; j++)
                 {
-                    hit = true;
+                    if (players[j].gameID == bullets[i].shooterID
+                        || players[j].life <= 0) continue; // Don't collide with shooter or dead people
 
-                    // Increment shooter's counter
-                    players[bullets[i].shooterID].shotsHit += 1;
-
-                    // Deal damage
-                    players[j].life -= 1;
-
-                    // If it was a kill, increase the shooter's counter
-                    if (players[j].life <= 0)
+                    // Check for collision
+                    if (players[j].x - playerSize2 / 2.0f <= bullets[i].x &&
+                        players[j].x + playerSize2 / 2.0f >= bullets[i].x &&
+                        players[j].y - playerSize2 / 2.0f <= bullets[i].y &&
+                        players[j].y + playerSize2 / 2.0f >= bullets[i].y)
                     {
-                        players[j].frameOfDeath = framesPassed;
-                        players[bullets[i].shooterID].playersKilled += 1;
-                    }
+                        hit = true;
 
+                        // Increment shooter's counter
+                        players[bullets[i].shooterID].shotsHit += 1;
+
+                        // Deal damage
+                        players[j].life -= 1;
+
+                        // If it was a kill, increase the shooter's counter
+                        if (players[j].life <= 0)
+                        {
+                            players[j].frameOfDeath = framesPassed;
+                            players[bullets[i].shooterID].playersKilled += 1;
+                        }
+
+                    }
                 }
             }
 

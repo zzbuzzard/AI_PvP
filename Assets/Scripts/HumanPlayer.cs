@@ -13,7 +13,7 @@ public class HumanPlayer : GenericPlayer
 
         if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) h--;
         if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) h++;
-        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W)) jump = true;
+        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space)) jump = true;
         if (GameDisplay.mouseClicked)
         {
             GameDisplay.mouseClicked = false;

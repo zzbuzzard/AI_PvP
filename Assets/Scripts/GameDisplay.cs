@@ -16,7 +16,7 @@ public class GameDisplay : MonoBehaviour
 
     public bool gameInProgress = false;
 
-    public void Simulate(List<GenericPlayer> players)
+    public void Simulate(List<GenericPlayer> players, bool timeless = false)
     {
         // Clean up previous simulation
         foreach (GameObject x in playerObjs) Destroy(x);
@@ -46,6 +46,9 @@ public class GameDisplay : MonoBehaviour
                 }
             }
         }
+
+        if (timeless)
+            g.maxMatchTime = float.PositiveInfinity;
     }
 
 
@@ -94,7 +97,7 @@ public class GameDisplay : MonoBehaviour
     }
 
 
-    private void EndSimulation()
+    public void EndSimulation()
     {
         gameInProgress = false;
         g = null;
@@ -103,6 +106,7 @@ public class GameDisplay : MonoBehaviour
     private void MakePlayer(GenericPlayer p)
     {
         GameObject mPref = Instantiate(playerPrefab);
+        mPref.transform.GetChild(0).GetComponent<TextMesh>().text = "" + p.myPlayerID;
         playerObjs.Add(mPref);
     }
 
@@ -117,7 +121,7 @@ public class GameDisplay : MonoBehaviour
     public static bool mouseClicked;
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButton(0))
         {
             mouseClicked = true;
         }

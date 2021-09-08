@@ -37,4 +37,11 @@ public static class Util
         }
         foreach (T t in b) a.Add(t);
     }
+
+    public static T[] Repeat<T>(T t, int n)
+    {
+        T[] arr = new T[n];
+        for (int i = 0; i < n; i++) arr[i] = t;
+        return arr;
+    }
 }

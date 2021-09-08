@@ -8,6 +8,8 @@ public class NeuralNet
     int[] levels;
     int N;
 
+    int[] linearLevels; // linearLevels[i] = number of nodes which are NOT activated in this layer
+
     // weights has length N-1
     // weights[i] has dimension [levels[i], levels[i+1]]
     public float[][,] weights;
@@ -23,13 +25,15 @@ public class NeuralNet
         return (float)Math.Tanh(f);
     }
 
-    public NeuralNet(int[] levels)
+    public NeuralNet(int[] levels, int[] linearLevels)
     {
         this.levels = levels;
         N = levels.Length;
 
+        this.linearLevels = linearLevels;
+
         nodes = new float[N][];
-        for (int i=0; i<N; i++)
+        for (int i = 0; i < N; i++)
         {
             nodes[i] = new float[levels[i]];
         }
@@ -41,10 +45,14 @@ public class NeuralNet
         }
 
         weights = new float[N - 1][,];
-        for (int i=0; i<N-1; i++)
+        for (int i = 0; i < N - 1; i++)
         {
             weights[i] = new float[levels[i], levels[i + 1]];
         }
+    }
+
+    public NeuralNet(int[] levels) : this(levels, Util.Repeat(0, levels.Length))
+    {
     }
 
     // Assumes nodes[0] is set to the inputs
@@ -67,8 +75,11 @@ public class NeuralNet
                 }
             }
 
-            // Apply activation function
-            for (int j = 0; j < levels[i + 1]; j++) nodes[i + 1][j] = ActivationFunction(nodes[i + 1][j]);
+            if (i != N-2)
+            // Apply activation function (but not for last level)
+            // Reserve linearLevels; we don't apply ActivationFunction to these
+            for (int j = 0; j < levels[i + 1] - linearLevels[i + 1]; j++)
+                    nodes[i + 1][j] = ActivationFunction(nodes[i + 1][j]);
         }
     }
 
