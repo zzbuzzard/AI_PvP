@@ -3,6 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+public enum NodeType
+{
+    INPUT, OUTPUT, HIDDEN
+}
+public struct NodeGene
+{
+
+}
 public struct ConnectionGene
 {
     int innovationNumber;
@@ -31,6 +39,12 @@ public class Genome
         this.genes = genes;
     }
 
+    static public Genome Mutate(Genome old)
+    {
+        var genes = new List<ConnectionGene>();
+
+        return new Genome(1,2);
+    }
 
 
     public DAGNet MakeNet()
