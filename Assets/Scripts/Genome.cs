@@ -9,7 +9,8 @@ public enum NodeType
 }
 public struct NodeGene
 {
-
+    int ID;
+    NodeType type;
 }
 public struct ConnectionGene
 {
