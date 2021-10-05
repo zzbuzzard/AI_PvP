@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NeuralNet
+public class LayeredNeuralNetwork
 {
     int[] levels;
     int N;
@@ -25,7 +25,7 @@ public class NeuralNet
         return (float)Math.Tanh(f);
     }
 
-    public NeuralNet(int[] levels, int[] linearLevels)
+    public LayeredNeuralNetwork(int[] levels, int[] linearLevels)
     {
         this.levels = levels;
         N = levels.Length;
@@ -51,7 +51,7 @@ public class NeuralNet
         }
     }
 
-    public NeuralNet(int[] levels) : this(levels, Util.Repeat(0, levels.Length))
+    public LayeredNeuralNetwork(int[] levels) : this(levels, Util.Repeat(0, levels.Length))
     {
     }
 
@@ -94,3 +94,4 @@ public class NeuralNet
         return null;
     }
 }
+ 

@@ -62,14 +62,14 @@ public class AIPlayer : GenericPlayer
 
     Pair<float, int>[] playerSorter;
 
-    NeuralNet mnet;
+    LayeredNeuralNetwork mnet;
     GameInput prevInput = new GameInput(0, false, false, 0.0f);
 
-    public AIPlayer() : this(new NeuralNet(levels, linear))
+    public AIPlayer() : this(new LayeredNeuralNetwork(levels, linear))
     {
     }
 
-    public AIPlayer(NeuralNet brain)
+    public AIPlayer(LayeredNeuralNetwork brain)
     {
         mnet = brain;
 
@@ -270,7 +270,7 @@ public class AIPlayer : GenericPlayer
     const float mutateAmount = 2.0f;
     public AIPlayer Breed(AIPlayer otherParent)
     {
-        NeuralNet p = new NeuralNet(levels, linear);
+        LayeredNeuralNetwork p = new LayeredNeuralNetwork(levels, linear);
         float a;
         for (int i=0; i<p.weights.Length; i++)
         {
