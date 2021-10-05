@@ -14,6 +14,8 @@ public class AIPlayer : GenericPlayer
     //   - Health (1)
     //   - Velocity (2)
     //   - On floor (1)
+    //   - Num jumps (1)
+    //   - JumpLast (1)
 
     //  Per player (reserved for FFA_size-1):
     //   - Position              (2)
@@ -33,18 +35,19 @@ public class AIPlayer : GenericPlayer
     //   - velocity            (2)
 
     // Applied on either side, so (2,2) means a 5x5 grid
-    const int gridX = 2;
-    const int gridY = 2;
+    static readonly int gridX = 2;
+    static readonly int gridY = 2;
 
-    const int inputsGrid = (2*gridX+1) * (2*gridY+1);
-    const int inputsMe = 6;
-    const int inputsPerPlayer = 9;
-    const int inputsPerBullet = 8;
+    static readonly int inputsGrid = (2*gridX+1) * (2*gridY+1);
+    static readonly int inputsMe = 8;
+    static readonly int inputsPerPlayer = 9;
+    static readonly int inputsPerBullet = 8;
 
-    const int numPlayers = RankedGenetic.FFA_size - 1;
-    const int numBullets = 5;
+    static readonly int maxNumPlayers = 5;
+    static readonly int numPlayers = Math.Min(RankedGenetic.FFA_size - 1, maxNumPlayers);
+    static readonly int numBullets = 5;
 
-    const int numInputs = inputsGrid + inputsMe + inputsPerPlayer * numPlayers + inputsPerBullet * numBullets;
+    static readonly int numInputs = inputsGrid + inputsMe + inputsPerPlayer * numPlayers + inputsPerBullet * numBullets;
 
     // Outputs:
     //  left right (2)
@@ -54,8 +57,8 @@ public class AIPlayer : GenericPlayer
     const int numOutputs = 6;
 
     //static int[] levels = new int[]{ numInputs, 15, numOutputs };
-    static int[] levels = new int[] { numInputs, 16, 10, numOutputs };
-    static int[] linear = new int[] { 0, 4, 3, 0 };
+    static int[] levels = new int[] { numInputs, 15, numOutputs };
+    static int[] linear = new int[] { 0, 4, 0 };
 
     // Input every 4 frames (that is, 7 times a sec)
     const int whichFrameInput = 4;
@@ -73,8 +76,8 @@ public class AIPlayer : GenericPlayer
     {
         mnet = brain;
 
-        playerSorter = new Pair<float, int>[numPlayers];
-        for (int i = 0; i < numPlayers; i++) playerSorter[i] = new Pair<float, int>(float.PositiveInfinity, -1);
+        playerSorter = new Pair<float, int>[RankedGenetic.FFA_size - 1];
+        for (int i = 0; i < RankedGenetic.FFA_size - 1; i++) playerSorter[i] = new Pair<float, int>(float.PositiveInfinity, -1);
     }
 
     public override GameInput GetInput(Game game)
@@ -109,16 +112,14 @@ public class AIPlayer : GenericPlayer
 
         // Myself
         {
-            // Player inputs: position, health, velocity
-            //   - Position (2)
-            //   - Health (1)
-            //   - Velocity (2)
             mnet.nodes[0][offset]     = x / Game.xsize;
-            mnet.nodes[0][offset + 1] = y / Game.ysize;
-            mnet.nodes[0][offset + 2] = life / (float)maxlife;
+            mnet.nodes[0][offset + 1] = y / Game.ysize;          // Position
+            mnet.nodes[0][offset + 2] = life / (float)maxlife;   // My life
             mnet.nodes[0][offset + 3] = vx;
-            mnet.nodes[0][offset + 4] = vy;
-            mnet.nodes[0][offset + 5] = onFloor?1.0f:0.0f;
+            mnet.nodes[0][offset + 4] = vy;                      // Velocity
+            mnet.nodes[0][offset + 5] = onFloor ? 1.0f : 0.0f;   // On floor
+            mnet.nodes[0][offset + 6] = jumps / (float)numjumps; // Number of jumps remaining
+            mnet.nodes[0][offset + 7] = jumpLast ? 1.0f : 0.0f;  // Was jump held last time? TODO: Add memory and remove
 
             offset += inputsMe;
         }
@@ -126,7 +127,7 @@ public class AIPlayer : GenericPlayer
         // Players
         {
             int j = 0;
-            for (int i = 0; i < game.players.Count; i++)
+            for (int i = 0; i < RankedGenetic.FFA_size; i++)
             {
                 if (game.players[i].gameID != gameID)
                 {
@@ -153,7 +154,7 @@ public class AIPlayer : GenericPlayer
             //   - dx, dy normalised     (2)
             //   - distance              (1)
             //   - velocity              (2)
-            for (int i = 0; i < playerSorter.Length; i++)
+            for (int i = 0; i < numPlayers; i++)
             {
                 float dist = playerSorter[i].fst;
                 GenericPlayer p = game.players[playerSorter[i].snd];
