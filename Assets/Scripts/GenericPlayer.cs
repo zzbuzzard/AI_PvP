@@ -6,7 +6,8 @@ public enum EndType
 {
     KILLED,
     TIMEOUT,
-    WON
+    WON,
+    WALL
 }
 
 public abstract class GenericPlayer
@@ -16,10 +17,13 @@ public abstract class GenericPlayer
     public int myPlayerID { get; private set; }
 
     public const int maxlife = 3;
+    public const int numjumps = 2;
+
     public float x, y, vx, vy;
     public int gameID, life;
-    public bool onFloor;
+    public int jumps;
     public int lastShootFrame;
+    public bool jumpLast, onFloor;
 
 
     // Performance stats:
@@ -44,7 +48,10 @@ public abstract class GenericPlayer
         vx = 0;
         vy = 0;
         life = maxlife;
+
         onFloor = false;
+        jumps = 0;
+        jumpLast = false;
 
         this.endType = EndType.TIMEOUT;
         lastShootFrame = -10;

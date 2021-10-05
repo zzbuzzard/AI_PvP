@@ -120,10 +120,16 @@ public class Game
             players[spawnOrder[i]].Spawn(spacing * (i+0.5f), 1.0f, i);
 
             // Walls between em
-            //if (i > 0)
-            //{
-            //    map[(int)(spacing * i), 1] = MapBlock.WALL;
-            //}
+            if (i > 0)
+            {
+                //if (i % 4 == 1)
+                //{
+                //    map[(int)(spacing * i), 0] = MapBlock.EMPTY; // hole lol
+                //    map[(int)(spacing * i) + 1, 0] = MapBlock.EMPTY; // hole lol
+                //}
+                //map[(int)(spacing * i), 2] = MapBlock.WALL;
+            }
+            //map[(int)(spacing * (i + 0.5f)), 4] = MapBlock.WALL;
         }
     }
 
@@ -210,21 +216,42 @@ public class Game
 
             players[i].vx = inputs[i].hdir * playerMoveSpeed;
 
+            // Handle jumping
             if (players[i].onFloor)
             {
-                if (inputs[i].jump)
+                players[i].jumps = GenericPlayer.numjumps;
+
+                if (inputs[i].jump && !players[i].jumpLast)
                 {
+                    players[i].jumps--;
                     players[i].onFloor = false;
                     players[i].vy = playerJumpVelocity;
                 }
             }
             else
             {
-                players[i].vy -= gravity * spf;
+                if (players[i].jumps > 0 && inputs[i].jump && !players[i].jumpLast)
+                {
+                    players[i].jumps--;
+                    players[i].vy = playerJumpVelocity;
+                }
+                else
+                {
+                    players[i].vy -= gravity * spf;
+                }
             }
+            players[i].jumpLast = inputs[i].jump;
 
 
             players[i].x += players[i].vx * spf;
+
+            if (players[i].x < 0.0f || players[i].x > xsize-1)
+            {
+                players[i].life = 0;
+                players[i].frameOfDeath = framesPassed;
+                players[i].endType = EndType.WALL;
+                continue;
+            }
 
             float xmin = players[i].x - playerSize2 / 2.0f;
             float xmax = players[i].x + playerSize2 / 2.0f;
@@ -254,6 +281,15 @@ public class Game
             }
 
             players[i].y += players[i].vy * spf;
+
+            if (players[i].y < 0.0f || players[i].y > ysize-1)
+            {
+                players[i].life = 0;
+                players[i].frameOfDeath = framesPassed;
+                players[i].endType = EndType.WALL;
+                continue;
+            }
+
 
             xmin = players[i].x - playerSize / 2.0f;
             xmax = players[i].x + playerSize / 2.0f;
