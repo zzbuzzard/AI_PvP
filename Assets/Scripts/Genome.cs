@@ -41,7 +41,7 @@ public struct ConnectionGene
 
 public class Genome
 {
-    public static int globalInnovationNumber;
+    private static int globalInnovationNumber = 0;
 
     private int inputs, outputs;
     public readonly List<ConnectionGene> genes;
@@ -76,7 +76,20 @@ public class Genome
             // 3) Pick end (must be non-input)
             // 4) Check that resultant graph is acyclic (return to step 2 if not)
 
-            // TODO: Generate connection map
+            // Generate connection map
+            IDictionary<int, List<int>> adjacencyMap = new Dictionary<int, List<int>>();
+            foreach (ConnectionGene c in old.genes)
+            {
+                if (c.disabled) continue;
+
+                if (!adjacencyMap.ContainsKey(c.fromNode))
+                    adjacencyMap[c.fromNode] = new List<int>();
+                adjacencyMap[c.fromNode].Add(c.toNode);
+            }
+
+            // (defaults to all false)
+            bool[] visited = new bool[maxNode + 1];
+
 
             // Loop until we find a valid pair    (maybe just try a few times then give up idk)
             while (true) // TODO: uhh... this won't always terminate. for example if we have two nodes 1 and 2, and the edge 1->2 exists, we cant add any new ones.
@@ -94,8 +107,38 @@ public class Genome
                 // 1) Does this edge already exist?           O(E)
                 // 2) Does adding this edge produce a cycle?  O(V + E)
 
-                // TODO: Check edge doesn't exist
-                // TODO: Check CanReach(end, start); if theres a path end->start then we cant add start->end
+                // Check if the edge already exists, using the adjacencyMap
+                bool edgeExists = false;
+                if (adjacencyMap.ContainsKey(start))
+                {
+                    foreach (int i in adjacencyMap[start])
+                    {
+                        // Damn, start -> end already exists
+                        if (i == end)
+                        {
+                            edgeExists = true;
+                            break;
+                        }
+                    }
+                }
+                if (edgeExists) continue; // Start again with new start/end, as this edge already exists :(
+
+
+                // Check for end->start path; if it exists, we cannot add the start->end edge.
+                if (CanReach(end, start, adjacencyMap, visited))
+                {
+                    // This is invalid, so we try again
+                    // Reset visited to all false
+                    System.Array.Clear(visited, 0, visited.Length);
+                }
+                else
+                {
+                    // Valid! make connection and escape loop
+                    float weight = Random.Range(-1.0f, 1.0f);
+                    ConnectionGene c = new ConnectionGene(globalInnovationNumber++, start, end, false, weight);
+                    old.genes.Add(c);
+                    break;
+                }
             }
         }
         else
@@ -180,10 +223,12 @@ public class Genome
         if (visited[a]) return false;
         visited[a] = true;
 
-        if (!adj.ContainsKey(a)) return false;
-        foreach (int next in adj[a])
+        if (adj.ContainsKey(a))
         {
-            if (CanReach(next, b, adj, visited)) return true;
+            foreach (int next in adj[a])
+            {
+                if (CanReach(next, b, adj, visited)) return true;
+            }
         }
 
         return false;
