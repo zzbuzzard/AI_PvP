@@ -150,7 +150,7 @@ public class RankedGenetic : Genetic
                 int b = UnityEngine.Random.Range(a+1, mcount);
 
                 // Breed and add to list with default score
-                ais.Add(new AI(ais[a].player.Breed(ais[b].player), scorePerPop));
+                ais.Add(new AI(ais[a].player.BreedPlayer(ais[b].player), scorePerPop));
             }
 
             ais.Sort();

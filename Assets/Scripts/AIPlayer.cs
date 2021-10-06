@@ -56,24 +56,28 @@ public class AIPlayer : GenericPlayer
     //  jump (1)
     const int numOutputs = 6;
 
-    //static int[] levels = new int[]{ numInputs, 15, numOutputs };
-    static int[] levels = new int[] { numInputs, 15, numOutputs };
-    static int[] linear = new int[] { 0, 4, 0 };
-
     // Input every 4 frames (that is, 7 times a sec)
     const int whichFrameInput = 4;
 
     Pair<float, int>[] playerSorter;
 
-    LayeredNeuralNetwork mnet;
+    NeuralNet mnet;
     GameInput prevInput = new GameInput(0, false, false, 0.0f);
 
-    public AIPlayer() : this(new LayeredNeuralNetwork(levels, linear))
+    float[] inputArr, outputArr;
+
+    public static AIPlayer MakeLayeredAIPlayer()
     {
+        int[] levels = new int[] { numInputs, 15, numOutputs };
+        int[] linear = new int[] { 0, 4, 0 };
+
+        return new AIPlayer(new LayeredNeuralNet(levels, linear));
     }
 
-    public AIPlayer(LayeredNeuralNetwork brain)
+    public AIPlayer(NeuralNet brain)
     {
+        inputArr = new float[numInputs];
+
         mnet = brain;
 
         playerSorter = new Pair<float, int>[RankedGenetic.FFA_size - 1];
@@ -87,7 +91,7 @@ public class AIPlayer : GenericPlayer
 
         // Zero inputs
         // TODO: This is acc over the top a bit, we set most directly
-        Array.Clear(mnet.nodes[0], 0, numInputs);
+        Array.Clear(inputArr, 0, numInputs);
 
         int offset = 0;
 
@@ -103,7 +107,7 @@ public class AIPlayer : GenericPlayer
 
                     int index = (i - xpos + gridX) * (gridY * 2 + 1) + (j - ypos + gridY);
 
-                    mnet.nodes[0][index + offset] = 1.0f;
+                    inputArr[index + offset] = 1.0f;
                 }
             }
 
@@ -112,14 +116,14 @@ public class AIPlayer : GenericPlayer
 
         // Myself
         {
-            mnet.nodes[0][offset]     = x / Game.xsize;
-            mnet.nodes[0][offset + 1] = y / Game.ysize;          // Position
-            mnet.nodes[0][offset + 2] = life / (float)maxlife;   // My life
-            mnet.nodes[0][offset + 3] = vx;
-            mnet.nodes[0][offset + 4] = vy;                      // Velocity
-            mnet.nodes[0][offset + 5] = onFloor ? 1.0f : 0.0f;   // On floor
-            mnet.nodes[0][offset + 6] = jumps / (float)numjumps; // Number of jumps remaining
-            mnet.nodes[0][offset + 7] = jumpLast ? 1.0f : 0.0f;  // Was jump held last time? TODO: Add memory and remove
+            inputArr[offset]     = x / Game.xsize;
+            inputArr[offset + 1] = y / Game.ysize;          // Position
+            inputArr[offset + 2] = life / (float)maxlife;   // My life
+            inputArr[offset + 3] = vx;
+            inputArr[offset + 4] = vy;                      // Velocity
+            inputArr[offset + 5] = onFloor ? 1.0f : 0.0f;   // On floor
+            inputArr[offset + 6] = jumps / (float)numjumps; // Number of jumps remaining
+            inputArr[offset + 7] = jumpLast ? 1.0f : 0.0f;  // Was jump held last time? TODO: Add memory and remove
 
             offset += inputsMe;
         }
@@ -163,20 +167,20 @@ public class AIPlayer : GenericPlayer
                     float dx = p.x - x;
                     float dy = p.y - y;
 
-                    mnet.nodes[0][offset] = 1.0f;                      // Is alive
-                    mnet.nodes[0][offset + 1] = p.life / (float)maxlife;   // Health
-                    mnet.nodes[0][offset + 2] = p.x / Game.xsize;
-                    mnet.nodes[0][offset + 3] = p.y / Game.ysize;          // Position
-                    mnet.nodes[0][offset + 4] = dx / dist;
-                    mnet.nodes[0][offset + 5] = dy / dist;                 // dx, dy
-                    mnet.nodes[0][offset + 6] = dist;                      // dist
-                    mnet.nodes[0][offset + 7] = p.vx;
-                    mnet.nodes[0][offset + 8] = p.vy;                      // velocity
+                    inputArr[offset] = 1.0f;                      // Is alive
+                    inputArr[offset + 1] = p.life / (float)maxlife;   // Health
+                    inputArr[offset + 2] = p.x / Game.xsize;
+                    inputArr[offset + 3] = p.y / Game.ysize;          // Position
+                    inputArr[offset + 4] = dx / dist;
+                    inputArr[offset + 5] = dy / dist;                 // dx, dy
+                    inputArr[offset + 6] = dist;                      // dist
+                    inputArr[offset + 7] = p.vx;
+                    inputArr[offset + 8] = p.vy;                      // velocity
                 }
                 else
                 {
-                    mnet.nodes[0][offset] = 0.0f;
-                    //mnet.nodes[0][offset + 6] = 100.0f; Set distance to very large
+                    inputArr[offset] = 0.0f;
+                    //inputArr[offset + 6] = 100.0f; Set distance to very large
                 }
 
                 offset += inputsPerPlayer;
@@ -215,25 +219,25 @@ public class AIPlayer : GenericPlayer
                     float dx = p.x - x;
                     float dy = p.y - y;
 
-                    mnet.nodes[0][offset] = 1.0f;                          // Is alive
-                    mnet.nodes[0][offset + 1] = p.x / Game.xsize;
-                    mnet.nodes[0][offset + 2] = p.y / Game.ysize;          // Position
-                    mnet.nodes[0][offset + 3] = dx / dist;
-                    mnet.nodes[0][offset + 4] = dy / dist;                 // dx, dy
-                    mnet.nodes[0][offset + 5] = dist;                      // dist
-                    mnet.nodes[0][offset + 6] = p.vx;
-                    mnet.nodes[0][offset + 7] = p.vy;                      // velocity
+                    inputArr[offset] = 1.0f;                          // Is alive
+                    inputArr[offset + 1] = p.x / Game.xsize;
+                    inputArr[offset + 2] = p.y / Game.ysize;          // Position
+                    inputArr[offset + 3] = dx / dist;
+                    inputArr[offset + 4] = dy / dist;                 // dx, dy
+                    inputArr[offset + 5] = dist;                      // dist
+                    inputArr[offset + 6] = p.vx;
+                    inputArr[offset + 7] = p.vy;                      // velocity
                 }
                 else
                 {
-                    mnet.nodes[0][offset] = 0.0f;
+                    inputArr[offset] = 0.0f;
                 }
 
                 offset += inputsPerBullet;
             }
         }
 
-        mnet.Calculate();
+        outputArr = mnet.Evaluate(inputArr);
 
         // Outputs:
         //  left (1)
@@ -242,12 +246,12 @@ public class AIPlayer : GenericPlayer
         //  jump (1)
 
         // All in the range -1 ... 1
-        float left   = mnet.nodes[mnet.nodes.Length - 1][0];
-        float right  = mnet.nodes[mnet.nodes.Length - 1][1];
-        float shoot  = mnet.nodes[mnet.nodes.Length - 1][2];
-        float jump   = mnet.nodes[mnet.nodes.Length - 1][3];
-        float anglex = mnet.nodes[mnet.nodes.Length - 1][4];
-        float angley = mnet.nodes[mnet.nodes.Length - 1][5];
+        float left   = outputArr[0];
+        float right  = outputArr[1];
+        float shoot  = outputArr[2];
+        float jump   = outputArr[3];
+        float anglex = outputArr[4];
+        float angley = outputArr[5];
 
         float angle = Mathf.Atan2(angley, anglex);
 
@@ -267,41 +271,8 @@ public class AIPlayer : GenericPlayer
     }
 
 
-    const float mutateChance = 0.1f;
-    const float mutateAmount = 2.0f;
-    public AIPlayer Breed(AIPlayer otherParent)
+    public AIPlayer BreedPlayer(AIPlayer otherParent)
     {
-        LayeredNeuralNetwork p = new LayeredNeuralNetwork(levels, linear);
-        float a;
-        for (int i=0; i<p.weights.Length; i++)
-        {
-            for (int j=0; j<levels[i]; j++)
-            {
-                for (int k=0; k<levels[i+1]; k++)
-                {
-                    a = UnityEngine.Random.Range(0.0f, 1.0f);
-                    p.weights[i][j, k] = mnet.weights[i][j, k] * a + otherParent.mnet.weights[i][j, k] * (1 - a);
-
-                    if (UnityEngine.Random.Range(0.0f, 1.0f) < mutateChance)
-                        p.weights[i][j, k] += UnityEngine.Random.Range(-mutateAmount, mutateAmount);
-                }
-            }
-        }
-
-        for (int i=0; i<p.bias.Length; i++)
-        {
-            for (int j=0; j<levels[i]; j++)
-            {
-                a = UnityEngine.Random.Range(0.0f, 1.0f);
-                p.bias[i][j] = mnet.bias[i][j] * a + otherParent.mnet.bias[i][j] * (1 - a);
-
-                if (UnityEngine.Random.Range(0.0f, 1.0f) < mutateChance)
-                    p.bias[i][j] += UnityEngine.Random.Range(-mutateAmount, mutateAmount);
-            }
-        }
-
-        // TODO: Node biases
-
-        return new AIPlayer(p);
+        return new AIPlayer(mnet.Breed(otherParent.mnet));
     }
 }

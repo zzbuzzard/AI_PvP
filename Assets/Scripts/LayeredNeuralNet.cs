@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LayeredNeuralNetwork
+public class LayeredNeuralNet : NeuralNet
 {
     int[] levels;
     int N;
@@ -20,12 +20,7 @@ public class LayeredNeuralNetwork
 
     public float[][] bias;
 
-    public static float ActivationFunction(float f)
-    {
-        return (float)Math.Tanh(f);
-    }
-
-    public LayeredNeuralNetwork(int[] levels, int[] linearLevels)
+    public LayeredNeuralNet(int[] levels, int[] linearLevels)
     {
         this.levels = levels;
         N = levels.Length;
@@ -51,7 +46,7 @@ public class LayeredNeuralNetwork
         }
     }
 
-    public LayeredNeuralNetwork(int[] levels) : this(levels, Util.Repeat(0, levels.Length))
+    public LayeredNeuralNet(int[] levels) : this(levels, Util.Repeat(0, levels.Length))
     {
     }
 
@@ -83,7 +78,7 @@ public class LayeredNeuralNetwork
         }
     }
 
-    public float[] GetOutput(float[] input)
+    public override float[] Evaluate(float[] input)
     {
         if (input.Length == levels[0])
         {
@@ -92,6 +87,48 @@ public class LayeredNeuralNetwork
             return nodes[nodes.Length - 1];
         }
         return null;
+    }
+
+
+    const float mutateChance = 0.1f;
+    const float mutateAmount = 2.0f;
+
+    public override NeuralNet Breed(NeuralNet g_net)
+    {
+        // Unsafe cast; if bred with another neuralnet, it will crash
+        LayeredNeuralNet net = (LayeredNeuralNet)g_net;
+
+        LayeredNeuralNet p = new LayeredNeuralNet(levels, linearLevels);
+
+        float a;
+        for (int i = 0; i < p.weights.Length; i++)
+        {
+            for (int j = 0; j < levels[i]; j++)
+            {
+                for (int k = 0; k < levels[i + 1]; k++)
+                {
+                    a = UnityEngine.Random.Range(0.0f, 1.0f);
+                    p.weights[i][j, k] = weights[i][j, k] * a + net.weights[i][j, k] * (1 - a);
+
+                    if (UnityEngine.Random.Range(0.0f, 1.0f) < mutateChance)
+                        p.weights[i][j, k] += UnityEngine.Random.Range(-mutateAmount, mutateAmount);
+                }
+            }
+        }
+
+        for (int i = 0; i < p.bias.Length; i++)
+        {
+            for (int j = 0; j < levels[i]; j++)
+            {
+                a = UnityEngine.Random.Range(0.0f, 1.0f);
+                p.bias[i][j] = bias[i][j] * a + net.bias[i][j] * (1 - a);
+
+                if (UnityEngine.Random.Range(0.0f, 1.0f) < mutateChance)
+                    p.bias[i][j] += UnityEngine.Random.Range(-mutateAmount, mutateAmount);
+            }
+        }
+
+        return p;
     }
 }
  
