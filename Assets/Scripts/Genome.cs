@@ -42,6 +42,7 @@ public struct ConnectionGene
 public class Genome
 {
     private static int globalInnovationNumber = 0;
+    public float fitness = 0;
 
     private int inputs, outputs;
     public readonly List<ConnectionGene> genes;
@@ -90,9 +91,9 @@ public class Genome
             // (defaults to all false)
             bool[] visited = new bool[maxNode + 1];
 
-
-            // Loop until we find a valid pair    (maybe just try a few times then give up idk)
-            while (true) // TODO: uhh... this won't always terminate. for example if we have two nodes 1 and 2, and the edge 1->2 exists, we cant add any new ones.
+            int loops = 10;
+            // Loop until we find a valid pair    (maybe just try a few times then give up idk) this is ugly wtf
+            while (0 != loops--) // TODO: uhh... this won't always terminate. for example if we have two nodes 1 and 2, and the edge 1->2 exists, we cant add any new ones.
             {
                 // Must be non-output
                 int start = Random.Range(0, maxNode + 1 - old.outputs);
@@ -214,17 +215,122 @@ public class Genome
     }
 
 
-    // TODO: Calculate similarity for speciation by calculating disjoint, excess etc nodes
+    const float disjointCoeff = 0.5f;
+    const float excessCoeff = 0.3f;
+    const float weightCoeff = 0.2f;
     public float GetSimilarity(Genome other)
     {
-        return 0.0f;
+        //All innovation numbers
+        HashSet<int> innovationNumbers = new HashSet<int>();
+        int ourMax = 0;
+        int otherMax = 0;
+        IDictionary<int, ConnectionGene> ourGenes = new Dictionary<int, ConnectionGene>();
+        foreach (ConnectionGene gene in genes)
+        {
+            ourGenes.Add(gene.innovationNumber, gene);
+            innovationNumbers.Add(gene.innovationNumber);
+            if (gene.innovationNumber > ourMax) ourMax = gene.innovationNumber;
+        }
+
+        IDictionary<int, ConnectionGene> otherGenes = new Dictionary<int, ConnectionGene>();
+        foreach (ConnectionGene gene in other.genes)
+        {
+            otherGenes.Add(gene.innovationNumber, gene);
+            innovationNumbers.Add(gene.innovationNumber);
+            if (gene.innovationNumber > otherMax) otherMax = gene.innovationNumber;
+        }
+        float delta = 0;
+        int maxGenes = Mathf.Max(ourGenes.Count, otherGenes.Count);
+        float weightDifferences = 0;
+        int matchingGenes = 0;
+        // Calculate via the formula c1E/N, + c2D/N + c3W
+        foreach (int inum in innovationNumbers)
+        {
+            // Shared gene
+            if (ourGenes.ContainsKey(inum) && otherGenes.ContainsKey(inum))
+            {
+                weightDifferences += weightCoeff * Mathf.Abs(ourGenes[inum].weight - otherGenes[inum].weight);
+                matchingGenes++;
+
+            }
+            // Disjoint/Excess
+            else
+            {
+                // Excess
+                if(inum > ourMax || inum > otherMax)
+                {
+                    delta += excessCoeff / maxGenes;
+                }
+                //Disjoing
+                else
+                {
+                    delta += disjointCoeff / maxGenes;
+                }
+            }
+        }
+        weightDifferences /= matchingGenes;
+        delta += weightDifferences;
+
+        return delta;
+
     }
 
     // TODO: Create a new Genome which is a crossover between a and b
     // Note: I believe this has to leave a and b unmodified, as they will be used for future crossovers
     public static Genome Crossover(Genome a, Genome b)
     {
-        return null;
+        //All innovation numbers
+        HashSet<int> innovationNumbers = new HashSet<int>();
+        IDictionary<int, ConnectionGene> aGenes = new Dictionary<int, ConnectionGene>();
+        foreach (ConnectionGene gene in a.genes)
+        {
+            aGenes.Add(gene.innovationNumber, gene);
+            innovationNumbers.Add(gene.innovationNumber);
+        }
+
+        IDictionary<int, ConnectionGene> bGenes = new Dictionary<int, ConnectionGene>();
+        foreach (ConnectionGene gene in b.genes)
+        {
+            bGenes.Add(gene.innovationNumber, gene);
+            innovationNumbers.Add(gene.innovationNumber);
+        }
+
+        // God what is this mess aaaaaaaaaaaaaa
+        IDictionary<int, ConnectionGene> dominantParent;
+        if(a.fitness > b.fitness){
+            dominantParent = aGenes;
+        }
+        else if(b.fitness > a.fitness)
+        {
+            dominantParent = bGenes;
+
+        }else if(Random.Range(0.0f,1.0f) > 0.5f)
+        {
+            dominantParent = aGenes;
+        }
+        else
+        {
+            dominantParent = bGenes;
+        }
+
+        List<ConnectionGene> newGenes = new List<ConnectionGene>();
+        foreach (int inum in innovationNumbers)
+        {
+            if (aGenes.ContainsKey(inum) && bGenes.ContainsKey(inum))
+            {
+                newGenes.Add(dominantParent[inum]);
+            }else if (aGenes.ContainsKey(inum))
+            {
+                newGenes.Add(aGenes[inum]);
+            }
+            else
+            {
+                newGenes.Add(bGenes[inum]);
+            }
+        }
+
+        // TODO: Need to check if cyclic
+        return new Genome(a.inputs, a.outputs, newGenes);
     }
 
 

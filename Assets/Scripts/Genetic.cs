@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-
+using UnityEngine;
 // Abstract class for a genetic algorithm
 public abstract class Genetic
 {
@@ -23,13 +23,13 @@ public abstract class Genetic
 
         float percentageDiedBefore = p.diedBefore / (float)RankedGenetic.FFA_size;
 
-        return
+        return Mathf.Abs(
              + endBonus
              + percentageDiedBefore * 6              // up to 6 points for rank
              + p.shotsHit * 30                       // 30 points per hit shot
              + p.playersKilled * 30                  // 30 points per kill
              + 5 * accuracy                          // 5 points for 100% accuracy
-             - p.shotsFired                          // -1 point per shot fired
+             - p.shotsFired    )                      // -1 point per shot fired
              ;
 
         //             + p.life                               // 3 points for a perfect run, 2 for one hit, 1 for two hits
