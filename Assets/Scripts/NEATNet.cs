@@ -17,10 +17,12 @@ public class NEATNet : NeuralNet
         phenoType = p;
     }
 
-    // TODO: Breed
-    public override NeuralNet Breed(NeuralNet net)
+    // Breeds two NEAT nets by crossing over their genomes, and returning a new NEAT net from this
+    public override NeuralNet Breed(NeuralNet g_net)
     {
-        throw new System.NotImplementedException();
+        NEATNet net = (NEATNet)g_net;
+        Genome breedGenome = Genome.Crossover(genoType, net.genoType);
+        return new NEATNet(breedGenome);
     }
 
     public override float[] Evaluate(float[] input)

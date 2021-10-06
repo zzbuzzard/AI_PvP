@@ -214,6 +214,20 @@ public class Genome
     }
 
 
+    // TODO: Calculate similarity for speciation by calculating disjoint, excess etc nodes
+    public float GetSimilarity(Genome other)
+    {
+        return 0.0f;
+    }
+
+    // TODO: Create a new Genome which is a crossover between a and b
+    // Note: I believe this has to leave a and b unmodified, as they will be used for future crossovers
+    public static Genome Crossover(Genome a, Genome b)
+    {
+        return null;
+    }
+
+
     // Returns whether you can reach b from a using the edges in 'adj'
     // Runtime O(V+E), where V is num vertices and E is num edges in the graph
     public static bool CanReach(int a, int b, IDictionary<int, List<int>> adj, bool[] visited)
