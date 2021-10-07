@@ -23,7 +23,11 @@ public class Neat : Genetic
         {
             this.players = players;
         }
-
+        public Species(NeatPlayer player)
+        {
+            this.players = new List<NeatPlayer>();
+            this.players.Add(player);
+        }
         const float similarityThreshold = 0.1f;
         public bool IsInSpecies(NeatPlayer q)
         {
@@ -88,6 +92,42 @@ public class Neat : Genetic
     // TODO some kind of sensible matchmaking
     // TODO use speciation
     // TODO repopulate species with breeding etc
+
+
+    private List<Species> GetSpecies(List<NeatPlayer> players)
+    {
+        List<Species> species = new List<Species>();
+        foreach(NeatPlayer player in players)
+        {
+            bool found_species = false;
+            foreach(Species speshee in species)
+            {
+                if (speshee.IsInSpecies(player))
+                {
+                    speshee.Add(player);
+                    found_species = true;
+                    break;
+                }
+            }
+            if (found_species)
+            {
+                continue;
+            }
+            else
+            {
+                Species speshee = new Species(player);
+                species.Add(speshee);
+            }
+        }
+        return species;
+    }
+
+
+
+    // Speciate
+    // Evaluate fitness of everyone
+    // Work out population size
+    // Create new populations by breeding
     public override void Increment()
     {
         List<Species> species = new List<Species>(); // TODO: Call function for speciation
