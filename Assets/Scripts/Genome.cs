@@ -37,6 +37,23 @@ public struct ConnectionGene
     {
         return new ConnectionGene(innovationNumber, fromNode, toNode, true, weight);
     }
+
+    public ConnectionGene Enable()
+    {
+        return new ConnectionGene(innovationNumber, fromNode, toNode, false, weight);
+    }
+
+    internal ConnectionGene DiEnsable()
+    {
+        if (this.disabled)
+        {
+            return Enable();
+        }
+        else
+        {
+            return Disable();
+        }
+    }
 }
 
 public class Genome
@@ -151,7 +168,8 @@ public class Genome
             // 4) Add new connections
 
             int index = Random.Range(0, old.genes.Count);
-            while (old.genes[index].disabled) index = Random.Range(0, old.genes.Count);   // Reshuffle until we get a non-disabled one; if we have a disabled node we should always have at least one non-disabled one, so this will terminate
+            int _ = 5;
+            while (_-->0 && old.genes[index].disabled) index = Random.Range(0, old.genes.Count);
 
             // old.genes[index].disabled = true;           // Doesn't work because structs are weird and possibly immutable
             old.genes[index] = old.genes[index].Disable();
@@ -194,7 +212,9 @@ public class Genome
     {
         if (old.genes.Count == 0) return;
         int i = Random.Range(0, old.genes.Count);
-        old.genes[i] = old.genes[i].Disable();
+        old.genes[i] = old.genes[i].DiEnsable();
+
+
     }
 
     // Structurally or weighturally mutate
@@ -206,6 +226,7 @@ public class Genome
         else
         {
             if (f < 2.0f / 3.0f) DisableMutate(old);
+            //if (f < 2.0f / 3.0f) Debug.Log("Wahoo");
             else WeightMutate(old);
         }
     }
