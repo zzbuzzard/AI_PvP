@@ -241,6 +241,10 @@ public class Genome
         }
         float delta = 0;
         int maxGenes = Mathf.Max(ourGenes.Count, otherGenes.Count);
+        if(maxGenes == 0)
+        {
+            return 0.0f;
+        }
         float weightDifferences = 0;
         int matchingGenes = 0;
         // Calculate via the formula c1E/N, + c2D/N + c3W
@@ -268,7 +272,8 @@ public class Genome
                 }
             }
         }
-        weightDifferences /= matchingGenes;
+        if (matchingGenes == 0) { weightDifferences = 0; } else { weightDifferences /= matchingGenes; }
+        
         delta += weightDifferences;
 
         return delta;
