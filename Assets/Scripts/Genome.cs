@@ -190,11 +190,24 @@ public class Genome
         }
     }
 
+    public static void DisableMutate(Genome old)
+    {
+        if (old.genes.Count == 0) return;
+        int i = Random.Range(0, old.genes.Count);
+        old.genes[i] = old.genes[i].Disable();
+    }
+
     // Structurally or weighturally mutate
     public static void Mutate(Genome old)
     {
-        if (Random.Range(0, 1.0f) < 0.5f) StructuralMutate(old);
-        else WeightMutate(old);
+        float f = Random.Range(0, 1.0f);
+
+        if (f < 1.0f / 3.0f) StructuralMutate(old);
+        else
+        {
+            if (f < 2.0f / 3.0f) DisableMutate(old);
+            else WeightMutate(old);
+        }
     }
 
     public DAGNet MakeNet()
