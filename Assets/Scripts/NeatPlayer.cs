@@ -9,20 +9,20 @@ public class NeatPlayer : AIPlayer
     {
         get
         {
-            return ((NEATNet)mnet).genoType.fitness;
+            return ((NeatNet)mnet).genoType.fitness;
         }
         set
         {
-            ((NEATNet)mnet).genoType.fitness = value;
+            ((NeatNet)mnet).genoType.fitness = value;
         }
     }
 
     public Genome GetGenome()
     {
-        return ((NEATNet)mnet).genoType;
+        return ((NeatNet)mnet).genoType;
     }
     
-    public NeatPlayer(NEATNet brain) : base(brain)
+    public NeatPlayer(NeatNet brain) : base(brain)
     {
     }
 }
