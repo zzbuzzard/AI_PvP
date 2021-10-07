@@ -17,7 +17,7 @@ public class Neat : Genetic
     
     class Species
     {
-        public List<NeatPlayer> players;
+        public List<NeatPlayer> players { get; private set; }
 
         public Species()
         {
@@ -87,6 +87,20 @@ public class Neat : Genetic
         return null;
     }
 
+    // Create match for allSpecies[speciesIndex].population[index]
+    //private List<NeatPlayer> MatchMake(int speciesIndex, int index, List<Species> allSpecies)
+    //{
+    //    List<NeatPlayer> l = new List<NeatPlayer>();
+    //    for (int i=0; i<allSpecies.Count; i++)
+    //    {
+    //        l.Add(allSpecies[i].players[0]);
+    //    }
+
+    //    l.Add(allSpecies[speciesIndex].players[index]);
+
+    //    return l;
+    //}
+
     // TODO some kind of sensible matchmaking
     // TODO use speciation
     // TODO repopulate species with breeding etc
@@ -120,10 +134,16 @@ public class Neat : Genetic
         return species;
     }
 
-    void AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa(List<Species> species)
+
+    private void EvaluateAllFitness()
     {
-        return;
+        // TODO: MatchMake
+        List<GenericPlayer> gs = new List<GenericPlayer>();
+        foreach (NeatPlayer n in ais) gs.Add(n);
+        Game.SimulateGame(gs);
+        foreach (NeatPlayer n in ais) n.fitness = Genetic.GetScore1(n);
     }
+
 
     // Speciate
     // Evaluate fitness of everyone
@@ -133,8 +153,9 @@ public class Neat : Genetic
     {
         List<GenericPlayer> roundPlayers = new List<GenericPlayer>();
         List<Species> species = GetSpecies(ais);
+        Debug.Log("Number of species: " + species.Count);
 
-        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa(species);
+        EvaluateAllFitness();
 
         float averageFitness = 0;
 
