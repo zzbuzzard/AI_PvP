@@ -61,7 +61,7 @@ public class AIPlayer : GenericPlayer
 
     Pair<float, int>[] playerSorter;
 
-    NeuralNet mnet;
+    protected NeuralNet mnet;
     GameInput prevInput = new GameInput(0, false, false, 0.0f);
 
     float[] inputArr, outputArr;

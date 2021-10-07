@@ -7,40 +7,44 @@ using UnityEngine;
 // For a population of size N, there are 10N points in total.
 public class Neat : Genetic
 {
-    //class AI : IComparable<AI>
-    //{
-    //    public NeatPlayer player;
-    //    public float score;
+    class NeatComparator : IComparer<NeatPlayer>
+    {
+        public int Compare(NeatPlayer x, NeatPlayer y)
+        {
+            return x.fitness.CompareTo(y.fitness);
+        }
+    }
+    
+    class Species
+    {
+        List<NeatPlayer> players;
 
-    //    public AI(NeatPlayer player, float score)
-    //    {
-    //        this.player = player;
-    //        this.score = score;
-    //    }
+        public Species(List<NeatPlayer> players)
+        {
+            this.players = players;
+        }
 
-    //    public int CompareTo(AI other)
-    //    {
-    //        return -score.CompareTo(other.score);
-    //    }
-    //}
+        const float similarityThreshold = 0.1f;
+        public bool IsInSpecies(NeatPlayer q)
+        {
+            NeatPlayer p = players[UnityEngine.Random.Range(0, players.Count)];
+            return p.GetGenome().GetSimilarity(q.GetGenome()) <= similarityThreshold;
+        }
+
+        public void Add(NeatPlayer p)
+        {
+            players.Add(p);
+        }
+    }
 
     List<NeatPlayer> ais;
     int N;
 
-    const float scorePerPop = 1.0f;
-    const float minContribute = 0.25f;
-    const float threshold = 0.4f;
     public const int FFA_size = 8;
 
     public Neat(List<NeatPlayer> initialPopulation)
     {
         N = initialPopulation.Count;
-
-        // Ensure N is divisible by FFA_size
-        while (N % FFA_size != 0 && N > 0)
-        {
-            N--;
-        }
 
         ais = new List<NeatPlayer>();
         for (int i = 0; i < N; i++)
@@ -61,19 +65,25 @@ public class Neat : Genetic
         return players;
     }
 
-    // TODO speciation n general cleanup
-    // It compiles with no errors so that means its perfect :)
+    // TODO speciation
+    private List<Species> Speciate()
+    {
+        return null;
+    }
+
+    // TODO some kind of sensible matchmaking
+    // TODO use speciation
+    // TODO repopulate species with breeding etc
     public override void Increment()
     {
         List<GenericPlayer> roundPlayers = new List<GenericPlayer>();
-        List<Pair<float, int>> scores = new List<Pair<float, int>>();
+        //List<Pair<float, int>> scores = new List<Pair<float, int>>();
 
         for (int j = 0; j < FFA_size; j++)
         {
             roundPlayers.Add(null);
-            scores.Add(new Pair<float, int>(0.0f, 0));
+            //scores.Add(new Pair<float, int>(0.0f, 0));
         }
-
 
         for (int i = 0; i < N / FFA_size; i++)
         {
@@ -90,68 +100,27 @@ public class Neat : Genetic
 
             for (int j = 0; j < FFA_size; j++)
             {
-                scores[j].fst = Genetic.GetScore1(roundPlayers[j]);
-                scores[j].snd = j;
+                ((NeatPlayer)roundPlayers[j]).fitness = Genetic.GetScore1(roundPlayers[j]);
+                //scores[j].fst = Genetic.GetScore1(roundPlayers[j]);
+                //scores[j].snd = j;
             }
-            scores.Sort();
+            //scores.Sort();
 
-            // scores[0] is smallest so worst
-            // scores[FFA_size-1] is biggest so best
+            //// scores[0] is smallest so worst
+            //// scores[FFA_size-1] is biggest so best
 
-            float contribute = Math.Min(minScore, minContribute); // Everyone contributes this amount
+            //float contribute = Math.Min(minScore, minContribute); // Everyone contributes this amount
 
-            int totalUnits = (FFA_size * (FFA_size - 1)) / 2;
-            float unitPoint = contribute * FFA_size / totalUnits;
+            //int totalUnits = (FFA_size * (FFA_size - 1)) / 2;
+            //float unitPoint = contribute * FFA_size / totalUnits;
 
-            for (int j = 0; j < FFA_size; j++)
-            {
-                int ind = scores[j].snd;
-                ais[i * FFA_size + ind].fitness += unitPoint * j - contribute;
-            }
+            //for (int j = 0; j < FFA_size; j++)
+            //{
+            //    int ind = scores[j].snd;
+            //    ais[i * FFA_size + ind].fitness += unitPoint * j - contribute;
+            //}
         }
 
-        ais.Sort();
-
-        int removedCount = 0;
-        float removedScore = 0;
-        while (ais[ais.Count - 1].fitness < threshold)
-        {
-            removedCount++;
-            removedScore += ais[ais.Count - 1].fitness;
-
-            ais.RemoveAt(ais.Count - 1);
-        }
-
-        //Debug.Log("Top scorer has score " + ais[0].score + "\nRemoved " + removedCount);
-
-        if (removedCount > 0)
-        {
-            float currentTotScore = N * scorePerPop - removedScore;
-            float neededNewScore = removedCount * scorePerPop;
-
-            // We need to scale currentTotScore so that it is GOAL - NEEDED
-            // currentTotScore * alpha = GOAL - NEEDED
-
-            float multiplier = (N * scorePerPop - neededNewScore) / currentTotScore;
-
-            for (int i = 0; i < ais.Count; i++)
-            {
-                ais[i].fitness *= multiplier;
-            }
-
-            int mcount = ais.Count;
-            for (int i = 0; i < removedCount; i++)
-            {
-                // Pick two different as and bs
-                int a = UnityEngine.Random.Range(0, mcount - 1);
-                int b = UnityEngine.Random.Range(a + 1, mcount);
-
-                // Breed and add to list with default score
-                ais.Add(ais[a].BreedPlayer(ais[b]));
-            }
-
-            ais.Sort();
-        }
 
     }
 }
