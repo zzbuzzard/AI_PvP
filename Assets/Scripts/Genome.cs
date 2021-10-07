@@ -276,8 +276,6 @@ public class Genome
         
         delta += weightDifferences;
 
-        Debug.Log("Distance is " + delta);
-
         return delta;
 
     }
