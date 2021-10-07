@@ -23,7 +23,11 @@ public class Neat : Genetic
         {
             this.players = players;
         }
-
+        public Species(NeatPlayer player)
+        {
+            this.players = new List<NeatPlayer>();
+            this.players.Add(player);
+        }
         const float similarityThreshold = 0.1f;
         public bool IsInSpecies(NeatPlayer q)
         {
@@ -74,15 +78,50 @@ public class Neat : Genetic
     // TODO some kind of sensible matchmaking
     // TODO use speciation
     // TODO repopulate species with breeding etc
+
+
+    private List<Species> GetSpecies(List<NeatPlayer> players)
+    {
+        List<Species> species = new List<Species>();
+        foreach(NeatPlayer player in players)
+        {
+            bool found_species = false;
+            foreach(Species speshee in species)
+            {
+                if (speshee.IsInSpecies(player))
+                {
+                    speshee.Add(player);
+                    found_species = true;
+                    break;
+                }
+            }
+            if (found_species)
+            {
+                continue;
+            }
+            else
+            {
+                Species speshee = new Species(player);
+                species.Add(speshee);
+            }
+        }
+        return species;
+    }
+
+
+
+    // Speciate
+    // Evaluate fitness of everyone
+    // Work out population size
+    // Create new populations by breeding
     public override void Increment()
     {
         List<GenericPlayer> roundPlayers = new List<GenericPlayer>();
-        //List<Pair<float, int>> scores = new List<Pair<float, int>>();
+
 
         for (int j = 0; j < FFA_size; j++)
         {
             roundPlayers.Add(null);
-            //scores.Add(new Pair<float, int>(0.0f, 0));
         }
 
         for (int i = 0; i < N / FFA_size; i++)
@@ -101,24 +140,8 @@ public class Neat : Genetic
             for (int j = 0; j < FFA_size; j++)
             {
                 ((NeatPlayer)roundPlayers[j]).fitness = Genetic.GetScore1(roundPlayers[j]);
-                //scores[j].fst = Genetic.GetScore1(roundPlayers[j]);
-                //scores[j].snd = j;
             }
-            //scores.Sort();
-
-            //// scores[0] is smallest so worst
-            //// scores[FFA_size-1] is biggest so best
-
-            //float contribute = Math.Min(minScore, minContribute); // Everyone contributes this amount
-
-            //int totalUnits = (FFA_size * (FFA_size - 1)) / 2;
-            //float unitPoint = contribute * FFA_size / totalUnits;
-
-            //for (int j = 0; j < FFA_size; j++)
-            //{
-            //    int ind = scores[j].snd;
-            //    ais[i * FFA_size + ind].fitness += unitPoint * j - contribute;
-            //}
+            
         }
 
 
