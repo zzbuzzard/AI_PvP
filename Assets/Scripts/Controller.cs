@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System.Threading;
 
 public class Controller : MonoBehaviour
 {
     public TextMeshProUGUI genText;
     public GameDisplay d;
     Genetic population;
+    private Thread _t1;
 
     void Start()
     {
@@ -21,17 +23,21 @@ public class Controller : MonoBehaviour
         }
 
         population = new Neat(pop);
+        //_t1 = new Thread(_Update);
     }
 
     int generation = 0;
     void Update()
     {
-        if (!d.gameInProgress)
-        {
-            population.Increment();
-            generation++;
-            genText.text = "Generation " + generation;
-        }
+        //while (true)
+        //{
+            if (!d.gameInProgress)
+            {
+                population.Increment();
+                generation++;
+                genText.text = "Generation " + generation;
+            }
+        //}
     }
 
     public void ShowGame()
