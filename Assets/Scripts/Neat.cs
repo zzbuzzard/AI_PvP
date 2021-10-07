@@ -17,7 +17,7 @@ public class Neat : Genetic
     
     class Species
     {
-        List<NeatPlayer> players;
+        public List<NeatPlayer> players { get; private set; }
 
         public Species(List<NeatPlayer> players)
         {
@@ -71,39 +71,55 @@ public class Neat : Genetic
         return null;
     }
 
+    // Create match for allSpecies[speciesIndex].population[index]
+    //private List<NeatPlayer> MatchMake(int speciesIndex, int index, List<Species> allSpecies)
+    //{
+    //    List<NeatPlayer> l = new List<NeatPlayer>();
+    //    for (int i=0; i<allSpecies.Count; i++)
+    //    {
+    //        l.Add(allSpecies[i].players[0]);
+    //    }
+
+    //    l.Add(allSpecies[speciesIndex].players[index]);
+
+    //    return l;
+    //}
+
     // TODO some kind of sensible matchmaking
     // TODO use speciation
     // TODO repopulate species with breeding etc
     public override void Increment()
     {
-        List<GenericPlayer> roundPlayers = new List<GenericPlayer>();
-        //List<Pair<float, int>> scores = new List<Pair<float, int>>();
+        List<Species> species = new List<Species>(); // TODO: Call function for speciation
 
-        for (int j = 0; j < FFA_size; j++)
-        {
-            roundPlayers.Add(null);
-            //scores.Add(new Pair<float, int>(0.0f, 0));
-        }
+        Debug.Log("Number of species: " + species.Count);
 
-        for (int i = 0; i < N / FFA_size; i++)
-        {
-            for (int j = 0; j < FFA_size; j++)
-            {
-                roundPlayers[j] = ais[i * FFA_size + j];
-            }
 
-            // TODO: Shuffle? but then issues in next loop
-            Game.SimulateGame(roundPlayers);
+        //for (int j = 0; j < FFA_size; j++)
+        //{
+        //    roundPlayers.Add(null);
+        //    //scores.Add(new Pair<float, int>(0.0f, 0));
+        //}
 
-            // Min score is the one with the largest index
-            float minScore = ais[(i + 1) * FFA_size - 1].fitness;
+        //for (int i = 0; i < N / FFA_size; i++)
+        //{
+        //    for (int j = 0; j < FFA_size; j++)
+        //    {
+        //        roundPlayers[j] = ais[i * FFA_size + j];
+        //    }
 
-            for (int j = 0; j < FFA_size; j++)
-            {
-                ((NeatPlayer)roundPlayers[j]).fitness = Genetic.GetScore1(roundPlayers[j]);
-                //scores[j].fst = Genetic.GetScore1(roundPlayers[j]);
-                //scores[j].snd = j;
-            }
+        //    // TODO: Shuffle? but then issues in next loop
+        //    Game.SimulateGame(roundPlayers);
+
+        //    // Min score is the one with the largest index
+        //    float minScore = ais[(i + 1) * FFA_size - 1].fitness;
+
+        //    for (int j = 0; j < FFA_size; j++)
+        //    {
+        //        ((NeatPlayer)roundPlayers[j]).fitness = Genetic.GetScore1(roundPlayers[j]);
+        //        //scores[j].fst = Genetic.GetScore1(roundPlayers[j]);
+        //        //scores[j].snd = j;
+        //    }
             //scores.Sort();
 
             //// scores[0] is smallest so worst
@@ -119,7 +135,7 @@ public class Neat : Genetic
             //    int ind = scores[j].snd;
             //    ais[i * FFA_size + ind].fitness += unitPoint * j - contribute;
             //}
-        }
+        //}
 
 
     }
