@@ -61,7 +61,7 @@ public class Game
     // (0, 0) is the bottom left.
     // All squares are centered, so this means there is a block with center at (0, 0)
     private MapBlock[,] map;
-    public static int xsize { get; private set; } = 40;  // 40 x 10 works well with 5 - 8 players
+    public static int xsize { get; private set; } = 100;  // 40 x 10 works well with 5 - 8 players
     public static int ysize { get; private set; } = 10;
 
     public int framesPassed { get; private set; }

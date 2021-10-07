@@ -11,7 +11,7 @@ public class Neat : Genetic
     {
         public int Compare(NeatPlayer x, NeatPlayer y)
         {
-            return x.fitness.CompareTo(y.fitness);
+            return -x.fitness.CompareTo(y.fitness);
         }
     }
     
@@ -29,7 +29,7 @@ public class Neat : Genetic
             this.players.Add(player);
         }
 
-        const float similarityThreshold = 10.0f;
+        const float similarityThreshold = 0.2f;
         public bool IsInSpecies(NeatPlayer q)
         {
             NeatPlayer p = players[UnityEngine.Random.Range(0, players.Count)];
@@ -46,10 +46,10 @@ public class Neat : Genetic
             float fitness = 0;
             foreach (NeatPlayer player in players)
             {
-            fitness += player.fitness;
+                fitness += player.fitness;
             }
 
-            return fitness / players.Count;
+            return fitness;
         }
     }
 
@@ -73,7 +73,7 @@ public class Neat : Genetic
     {
         List<GenericPlayer> players = new List<GenericPlayer>();
 
-        for (int i = 0; i < N; i++)
+        for (int i = 0; i < ais.Count; i++)
         {
             players.Add(ais[i]);
         }
@@ -130,13 +130,24 @@ public class Neat : Genetic
     }
 
 
-    private void EvaluateAllFitness()
+    private void EvaluateAllFitness(List<Species> species)
     {
         // TODO: MatchMake
         List<GenericPlayer> gs = new List<GenericPlayer>();
         foreach (NeatPlayer n in ais) gs.Add(n);
         Game.SimulateGame(gs);
         foreach (NeatPlayer n in ais) n.fitness = Genetic.GetScore1(n);
+
+        // Adjusting
+        foreach (Species s in species)
+        {
+            foreach (NeatPlayer p in s.players)
+            {
+                p.fitness /= s.players.Count;
+            }
+
+            s.players.Sort(new NeatComparator());
+        }
     }
 
     const float breedSpeciesPercent = 0.25f;
@@ -148,9 +159,9 @@ public class Neat : Genetic
     public override void Increment()
     {
         List<Species> species = GetSpecies(ais);
-        Debug.Log("Number of species: " + species.Count);
+        Debug.Log("Number of species: " + species.Count + " and pop size is " + ais.Count);
 
-        EvaluateAllFitness();
+        EvaluateAllFitness(species);
 
         float averageFitness = 0;
 
@@ -160,19 +171,31 @@ public class Neat : Genetic
         }
         averageFitness /= ais.Count;
 
-        // TODO merge these two 
         ais.Clear();
 
-        foreach (var speshee in species)
+        for (int spIndex = 0; spIndex < species.Count; spIndex++)
         {
-            float fitdiff = Math.Abs(speshee.GetFitness() - averageFitness);
-            int size = (int)(fitdiff / 10);
+            Species speshee = species[spIndex];
+
+            float myfit = speshee.GetFitness();
+            int size = (int)(myfit / averageFitness);
+
+            if (size <= 0) size = 1;
+
+            if (spIndex == species.Count - 1)
+            {
+                size = N - ais.Count; 
+            }
+
+//            Debug.Log("Hi im a species and my new size is " + size);
 
             for (int i = 0; i < size; i++)
             {
                 int a = (int)(speshee.players.Count * UnityEngine.Random.Range(0.0f, breedSpeciesPercent));
                 int b = (int)(speshee.players.Count * UnityEngine.Random.Range(0.0f, breedSpeciesPercent));
                 Genome genom = Genome.Crossover(speshee.players[a].GetGenome(), speshee.players[b].GetGenome());
+
+                for (int _=0; _<5; _++) Genome.Mutate(genom);
 
                 ais.Add(new NeatPlayer(new NeatNet(genom)));
             }
