@@ -151,7 +151,6 @@ public class Neat : Genetic
     // Create new populations by breeding
     public override void Increment()
     {
-        List<GenericPlayer> roundPlayers = new List<GenericPlayer>();
         List<Species> species = GetSpecies(ais);
         Debug.Log("Number of species: " + species.Count);
 
