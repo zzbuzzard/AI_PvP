@@ -123,6 +123,15 @@ public class Neat : Genetic
     }
 
 
+    private void EvaluateAllFitness()
+    {
+        // TODO: MatchMake
+        List<GenericPlayer> gs = new List<GenericPlayer>();
+        foreach (NeatPlayer n in ais) gs.Add(n);
+        Game.SimulateGame(gs);
+        foreach (NeatPlayer n in ais) n.fitness = Genetic.GetScore1(n);
+    }
+
 
     // Speciate
     // Evaluate fitness of everyone
@@ -130,9 +139,11 @@ public class Neat : Genetic
     // Create new populations by breeding
     public override void Increment()
     {
-        List<Species> species = new List<Species>(); // TODO: Call function for speciation
-
+        List<Species> species = GetSpecies(ais);
         Debug.Log("Number of species: " + species.Count);
+
+        EvaluateAllFitness();
+
 
 
         //for (int j = 0; j < FFA_size; j++)
