@@ -17,17 +17,18 @@ public class Neat : Genetic
     
     class Species
     {
-        List<NeatPlayer> players;
+        public List<NeatPlayer> players;
 
-        public Species(List<NeatPlayer> players)
+        public Species()
         {
-            this.players = players;
+            this.players = new List<NeatPlayer>();
         }
         public Species(NeatPlayer player)
         {
             this.players = new List<NeatPlayer>();
             this.players.Add(player);
         }
+
         const float similarityThreshold = 0.1f;
         public bool IsInSpecies(NeatPlayer q)
         {
@@ -38,6 +39,17 @@ public class Neat : Genetic
         public void Add(NeatPlayer p)
         {
             players.Add(p);
+        }
+
+        public float GetFitness()
+        {
+                float fitness = 0;
+                foreach (NeatPlayer player in players)
+                {
+                fitness += player.fitness;
+                }
+
+                return fitness / players.Count;
         }
     }
 
@@ -108,7 +120,10 @@ public class Neat : Genetic
         return species;
     }
 
-
+    void AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa(List<Species> species)
+    {
+        return;
+    }
 
     // Speciate
     // Evaluate fitness of everyone
@@ -117,33 +132,34 @@ public class Neat : Genetic
     public override void Increment()
     {
         List<GenericPlayer> roundPlayers = new List<GenericPlayer>();
+        List<Species> species = GetSpecies(ais);
 
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa(species);
 
-        for (int j = 0; j < FFA_size; j++)
+        float averageFitness = 0;
+
+        foreach (NeatPlayer player in ais)
         {
-            roundPlayers.Add(null);
+            averageFitness += player.fitness;
+        }
+        averageFitness /= ais.Count;
+
+        List<Tuple<int, Species>> speciesSizes = new List<Tuple<int, Species>>();
+        foreach (var speshee in species)
+        {
+            float fitdiff = Math.Abs(speshee.GetFitness() - averageFitness);
+            speciesSizes.Add(new Tuple<int, Species>((int)(fitdiff / 10), speshee));
         }
 
-        for (int i = 0; i < N / FFA_size; i++)
+        ais.Clear();
+        foreach (var spesheeSize in speciesSizes)
         {
-            for (int j = 0; j < FFA_size; j++)
+            for (int i = 0; i < spesheeSize.Item1; i++)
             {
-                roundPlayers[j] = ais[i * FFA_size + j];
+                var currspeshee = spesheeSize.Item2;
+                var player = currspeshee.players[0].BreedPlayer(currspeshee.players[1]);
+                ais.Add((NeatPlayer)player);
             }
-
-            // TODO: Shuffle? but then issues in next loop
-            Game.SimulateGame(roundPlayers);
-
-            // Min score is the one with the largest index
-            float minScore = ais[(i + 1) * FFA_size - 1].fitness;
-
-            for (int j = 0; j < FFA_size; j++)
-            {
-                ((NeatPlayer)roundPlayers[j]).fitness = Genetic.GetScore1(roundPlayers[j]);
-            }
-            
         }
-
-
     }
 }
