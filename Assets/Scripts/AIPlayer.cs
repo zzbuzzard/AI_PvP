@@ -43,8 +43,7 @@ public class AIPlayer : GenericPlayer
     static readonly int inputsPerPlayer = 9;
     static readonly int inputsPerBullet = 8;
 
-    static readonly int maxNumPlayers = 5;
-    static readonly int numPlayers = Math.Min(RankedGenetic.FFA_size - 1, maxNumPlayers);
+    static readonly int numPlayers = 5;
     static readonly int numBullets = 5;
 
     static public readonly int numInputs = inputsGrid + inputsMe + inputsPerPlayer * numPlayers + inputsPerBullet * numBullets;
@@ -58,8 +57,6 @@ public class AIPlayer : GenericPlayer
 
     // Input every 4 frames (that is, 7 times a sec)
     const int whichFrameInput = 4;
-
-    Pair<float, int>[] playerSorter;
 
     protected NeuralNet mnet;
     GameInput prevInput = new GameInput(0, false, false, 0.0f);
@@ -80,8 +77,8 @@ public class AIPlayer : GenericPlayer
 
         mnet = brain;
 
-        playerSorter = new Pair<float, int>[RankedGenetic.FFA_size - 1];
-        for (int i = 0; i < RankedGenetic.FFA_size - 1; i++) playerSorter[i] = new Pair<float, int>(float.PositiveInfinity, -1);
+        //playerSorter = new Pair<float, int>[RankedGenetic.FFA_size - 1];
+        //for (int i = 0; i < RankedGenetic.FFA_size - 1; i++) playerSorter[i] = new Pair<float, int>(float.PositiveInfinity, -1);
     }
 
     public override GameInput GetInput(Game game)
@@ -130,8 +127,13 @@ public class AIPlayer : GenericPlayer
 
         // Players
         {
+            List<Pair<float, int>> playerSorter = new List<Pair<float, int>>();
+
+            for (int i = 0; i < game.players.Count; i++)
+                playerSorter.Add(new Pair<float, int>(float.PositiveInfinity, i));
+
             int j = 0;
-            for (int i = 0; i < RankedGenetic.FFA_size; i++)
+            for (int i = 0; i < game.players.Count; i++)
             {
                 if (game.players[i].gameID != gameID)
                 {
@@ -149,7 +151,7 @@ public class AIPlayer : GenericPlayer
                     j++;
                 }
             }
-            Array.Sort(playerSorter);
+            playerSorter.Sort();
 
             //  Per player (reserved for FFA_size-1):
             //   - Is alive              (1)

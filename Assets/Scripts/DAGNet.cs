@@ -18,6 +18,9 @@ public class DAGNet
 
     public DAGNet(int numInputs, int numOutputs, List<ConnectionGene> genes)
     {
+        topoSort = new List<int>();
+        nodeActivation = new List<float>();
+
         this.numInputs = numInputs;
         this.numOutputs = numOutputs;
         outputArray = new float[numOutputs];
@@ -35,6 +38,7 @@ public class DAGNet
 
         for (int i=0; i<N; i++)
         {
+            nodeActivation.Add(0.0f);
             edges[i] = new List<int>();
             edgeWeights[i] = new List<float>();
         }
