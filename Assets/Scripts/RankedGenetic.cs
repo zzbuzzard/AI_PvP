@@ -68,6 +68,7 @@ public class RankedGenetic : Genetic
     // 5) Repeat
     public override void Increment()
     {
+        Debug.Log("YOU NOBHEAD");
         List<GenericPlayer> roundPlayers = new List<GenericPlayer>();
         List<Pair<float, int>> scores = new List<Pair<float, int>>();
 

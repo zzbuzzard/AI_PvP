@@ -81,11 +81,6 @@ public class Neat : Genetic
         return players;
     }
 
-    // TODO speciation
-    private List<Species> Speciate()
-    {
-        return null;
-    }
 
     // Create match for allSpecies[speciesIndex].population[index]
     //private List<NeatPlayer> MatchMake(int speciesIndex, int index, List<Species> allSpecies)

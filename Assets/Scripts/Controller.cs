@@ -11,15 +11,16 @@ public class Controller : MonoBehaviour
 
     void Start()
     {
-        List<AIPlayer> pop = new List<AIPlayer>();
+        List<NeatPlayer> pop = new List<NeatPlayer>();
 
         // Populate with 100 layered AI players
         for (int i=0; i<100; i++)
         {
-            pop.Add(AIPlayer.MakeLayeredAIPlayer());
+            pop.Add(new NeatPlayer(new NeatNet(new Genome(AIPlayer.numInputs, AIPlayer.numOutputs))));
+            //pop.Add(AIPlayer.MakeLayeredAIPlayer());
         }
 
-        population = new RankedGenetic(pop);
+        population = new Neat(pop);
     }
 
     int generation = 0;

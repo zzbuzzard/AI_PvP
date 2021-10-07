@@ -47,14 +47,14 @@ public class AIPlayer : GenericPlayer
     static readonly int numPlayers = Math.Min(RankedGenetic.FFA_size - 1, maxNumPlayers);
     static readonly int numBullets = 5;
 
-    static readonly int numInputs = inputsGrid + inputsMe + inputsPerPlayer * numPlayers + inputsPerBullet * numBullets;
+    static public readonly int numInputs = inputsGrid + inputsMe + inputsPerPlayer * numPlayers + inputsPerBullet * numBullets;
 
     // Outputs:
     //  left right (2)
     //  shoot (1)
     //  angle (2)
     //  jump (1)
-    const int numOutputs = 6;
+     public static readonly int numOutputs = 6;
 
     // Input every 4 frames (that is, 7 times a sec)
     const int whichFrameInput = 4;
