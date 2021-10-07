@@ -29,7 +29,7 @@ public class Neat : Genetic
             this.players.Add(player);
         }
 
-        const float similarityThreshold = 1.0f;
+        const float similarityThreshold = 10.0f;
         public bool IsInSpecies(NeatPlayer q)
         {
             NeatPlayer p = players[UnityEngine.Random.Range(0, players.Count)];
@@ -139,6 +139,7 @@ public class Neat : Genetic
         foreach (NeatPlayer n in ais) n.fitness = Genetic.GetScore1(n);
     }
 
+    const float breedSpeciesPercent = 0.25f;
 
     // Speciate
     // Evaluate fitness of everyone
@@ -169,8 +170,11 @@ public class Neat : Genetic
 
             for (int i = 0; i < size; i++)
             {
-                var player = speshee.players[0].BreedPlayer(speshee.players[1]);
-                ais.Add((NeatPlayer)player);
+                int a = (int)(speshee.players.Count * UnityEngine.Random.Range(0.0f, breedSpeciesPercent));
+                int b = (int)(speshee.players.Count * UnityEngine.Random.Range(0.0f, breedSpeciesPercent));
+                Genome genom = Genome.Crossover(speshee.players[a].GetGenome(), speshee.players[b].GetGenome());
+
+                ais.Add(new NeatPlayer(new NeatNet(genom)));
             }
         }
     }
