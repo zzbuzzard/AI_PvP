@@ -25,5 +25,6 @@ public class NeatPlayer : AIPlayer
     public NeatPlayer(NeatNet brain) : base(brain)
     {
     }
+
 }
 

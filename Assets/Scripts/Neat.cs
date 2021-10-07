@@ -159,20 +159,17 @@ public class Neat : Genetic
         }
         averageFitness /= ais.Count;
 
-        List<Tuple<int, Species>> speciesSizes = new List<Tuple<int, Species>>();
+        // TODO merge these two 
+        ais.Clear();
+
         foreach (var speshee in species)
         {
             float fitdiff = Math.Abs(speshee.GetFitness() - averageFitness);
-            speciesSizes.Add(new Tuple<int, Species>((int)(fitdiff / 10), speshee));
-        }
+            int size = (int)(fitdiff / 10);
 
-        ais.Clear();
-        foreach (var spesheeSize in speciesSizes)
-        {
-            for (int i = 0; i < spesheeSize.Item1; i++)
+            for (int i = 0; i < size; i++)
             {
-                var currspeshee = spesheeSize.Item2;
-                var player = currspeshee.players[0].BreedPlayer(currspeshee.players[1]);
+                var player = speshee.players[0].BreedPlayer(speshee.players[1]);
                 ais.Add((NeatPlayer)player);
             }
         }
