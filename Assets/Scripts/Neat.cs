@@ -29,7 +29,7 @@ public class Neat : Genetic
             this.players.Add(player);
         }
 
-        const float similarityThreshold = 0.1f;
+        const float similarityThreshold = 1.0f;
         public bool IsInSpecies(NeatPlayer q)
         {
             NeatPlayer p = players[UnityEngine.Random.Range(0, players.Count)];
@@ -43,13 +43,13 @@ public class Neat : Genetic
 
         public float GetFitness()
         {
-                float fitness = 0;
-                foreach (NeatPlayer player in players)
-                {
-                fitness += player.fitness;
-                }
+            float fitness = 0;
+            foreach (NeatPlayer player in players)
+            {
+            fitness += player.fitness;
+            }
 
-                return fitness / players.Count;
+            return fitness / players.Count;
         }
     }
 
