@@ -43,7 +43,7 @@ public class AIPlayer : GenericPlayer
     static readonly int inputsPerPlayer = 9;
     static readonly int inputsPerBullet = 8;
 
-    static readonly int numPlayers = 5;
+    static readonly int numPlayers = 1;
     static readonly int numBullets = 5;
 
     static public readonly int numInputs = inputsGrid + inputsMe + inputsPerPlayer * numPlayers + inputsPerBullet * numBullets;

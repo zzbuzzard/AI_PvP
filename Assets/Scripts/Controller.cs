@@ -16,7 +16,7 @@ public class Controller : MonoBehaviour
         List<NeatPlayer> pop = new List<NeatPlayer>();
 
         // Populate with 100 layered AI players
-        for (int i=0; i<30; i++)
+        for (int i=0; i<100; i++)
         {
             pop.Add(new NeatPlayer(new NeatNet(new Genome(AIPlayer.numInputs, AIPlayer.numOutputs))));
             //pop.Add(AIPlayer.MakeLayeredAIPlayer());
@@ -58,7 +58,7 @@ public class Controller : MonoBehaviour
 
         List<GenericPlayer> ps = population.GetPopulation();
         List<GenericPlayer> qs = new List<GenericPlayer>();
-        for (int i = 0; i < RankedGenetic.FFA_size - 1; i++)
+        for (int i = 0; i < 1; i++)
             qs.Add(ps[i]);
 
         qs.Add(new HumanPlayer());

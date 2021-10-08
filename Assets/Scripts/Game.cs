@@ -61,8 +61,8 @@ public class Game
     // (0, 0) is the bottom left.
     // All squares are centered, so this means there is a block with center at (0, 0)
     private MapBlock[,] map;
-    public static int xsize { get; private set; } = 100;  // 40 x 10 works well with 5 - 8 players
-    public static int ysize { get; private set; } = 10;
+    public static int xsize { get; private set; } = 12;  // 40 x 10 works well with 5 - 8 players
+    public static int ysize { get; private set; } = 8;
 
     public int framesPassed { get; private set; }
 
@@ -109,15 +109,15 @@ public class Game
 
         // Initiate players evenly spaced at (x, 1)
 
-        List<int> spawnOrder = new List<int>();
-        for (int i = 0; i < players.Count; i++) spawnOrder.Add(i);
-        Util.Shuffle(spawnOrder);
+        //List<int> spawnOrder = new List<int>();
+        //for (int i = 0; i < players.Count; i++) spawnOrder.Add(i);
+        //Util.Shuffle(spawnOrder);
 
         float spacing = xsize / players.Count;
         for (int i=0; i<players.Count; i++)
         {
             // Note ID is always index
-            players[spawnOrder[i]].Spawn(spacing * (i+0.5f), 1.0f, i);
+            players[i].Spawn(spacing * (i+0.5f), 1.0f, i);
 
             // Walls between em
             if (i > 0)

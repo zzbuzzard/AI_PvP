@@ -56,11 +56,13 @@ public class Neat : Genetic
     List<NeatPlayer> ais;
     int N;
 
-    public const int FFA_size = 8;
+    List<GenericPlayer> enemies;
 
     public Neat(List<NeatPlayer> initialPopulation)
     {
         N = initialPopulation.Count;
+
+        enemies = new List<GenericPlayer>() { new RobotPlayer1(), new RobotPlayer2(), new RobotPlayer3() };
 
         ais = new List<NeatPlayer>();
         for (int i = 0; i < N; i++)
@@ -73,6 +75,8 @@ public class Neat : Genetic
     {
         List<GenericPlayer> players = new List<GenericPlayer>();
 
+        ais.Sort(new NeatComparator());
+
         for (int i = 0; i < ais.Count; i++)
         {
             players.Add(ais[i]);
@@ -80,25 +84,6 @@ public class Neat : Genetic
 
         return players;
     }
-
-
-    // Create match for allSpecies[speciesIndex].population[index]
-    //private List<NeatPlayer> MatchMake(int speciesIndex, int index, List<Species> allSpecies)
-    //{
-    //    List<NeatPlayer> l = new List<NeatPlayer>();
-    //    for (int i=0; i<allSpecies.Count; i++)
-    //    {
-    //        l.Add(allSpecies[i].players[0]);
-    //    }
-
-    //    l.Add(allSpecies[speciesIndex].players[index]);
-
-    //    return l;
-    //}
-
-    // TODO some kind of sensible matchmaking
-    // TODO use speciation
-    // TODO repopulate species with breeding etc
 
 
     private List<Species> GetSpecies(List<NeatPlayer> players)
@@ -129,14 +114,34 @@ public class Neat : Genetic
         return species;
     }
 
-
     private void EvaluateAllFitness(List<Species> species)
     {
-        // TODO: MatchMake
-        List<GenericPlayer> gs = new List<GenericPlayer>();
-        foreach (NeatPlayer n in ais) gs.Add(n);
-        Game.SimulateGame(gs);
-        foreach (NeatPlayer n in ais) n.fitness = Genetic.GetScore1(n);
+        float maxFitness = 0.0f;
+
+        foreach (Species s in species)
+        {
+            foreach (NeatPlayer p in s.players)
+            {
+                p.fitness = 0.0f;
+
+                foreach (GenericPlayer enemy in enemies)
+                {
+                    List<GenericPlayer> gs;
+
+                    gs = new List<GenericPlayer>() { p, enemy };
+                    Game.SimulateGame(gs);
+                    p.fitness += Genetic.GetScore1(p);
+
+                    gs = new List<GenericPlayer>() { enemy, p };
+                    Game.SimulateGame(gs);
+                    p.fitness += Genetic.GetScore1(p);
+                }
+
+                if (p.fitness > maxFitness) maxFitness = p.fitness;
+            }
+        }
+
+        Debug.Log("Max fitness: " + maxFitness);
 
         // Adjusting
         foreach (Species s in species)
@@ -151,6 +156,7 @@ public class Neat : Genetic
     }
 
     const float breedSpeciesPercent = 0.25f;
+    const int goalNumSpecies = 5;
 
     // Speciate
     // Evaluate fitness of everyone
@@ -180,8 +186,6 @@ public class Neat : Genetic
             float myfit = speshee.GetFitness();
             int size = (int)(myfit / averageFitness);
 
-            if (size <= 0) size = 1;
-
             if (spIndex == species.Count - 1)
             {
                 size = N - ais.Count; 
@@ -189,16 +193,21 @@ public class Neat : Genetic
 
 //            Debug.Log("Hi im a species and my new size is " + size);
 
-            for (int i = 0; i < size; i++)
+            for (int i = 0; i < size - 1; i++)
             {
                 int a = (int)(speshee.players.Count * UnityEngine.Random.Range(0.0f, breedSpeciesPercent));
                 int b = (int)(speshee.players.Count * UnityEngine.Random.Range(0.0f, breedSpeciesPercent));
                 Genome genom = Genome.Crossover(speshee.players[a].GetGenome(), speshee.players[b].GetGenome());
 
-                for (int _=0; _<3; _++) Genome.Mutate(genom);
+                int NUM_MUTATE = (species.Count < goalNumSpecies ? 5 : 1);
+
+                for (int _=0; _<NUM_MUTATE; _++)
+                    Genome.Mutate(genom);
 
                 ais.Add(new NeatPlayer(new NeatNet(genom)));
             }
+            if (size != 0)
+                ais.Add(speshee.players[0]); // Keep the best one >:)
         }
     }
 }
