@@ -7,6 +7,8 @@ using UnityEngine;
 // For a population of size N, there are 10N points in total.
 public class Neat : Genetic
 {
+
+    public static readonly int numberOfSpecies = 10;
     class NeatComparator : IComparer<NeatPlayer>
     {
         public int Compare(NeatPlayer x, NeatPlayer y)
@@ -29,7 +31,7 @@ public class Neat : Genetic
             this.players.Add(player);
         }
 
-        const float similarityThreshold = 0.2f;
+        public static float similarityThreshold = 0.2f;
         public bool IsInSpecies(NeatPlayer q)
         {
             NeatPlayer p = players[UnityEngine.Random.Range(0, players.Count)];
@@ -160,8 +162,21 @@ public class Neat : Genetic
     {
         List<Species> species = GetSpecies(ais);
         Debug.Log("Number of species: " + species.Count + " and pop size is " + ais.Count);
+        if(species.Count < numberOfSpecies)
+        {
+            Species.similarityThreshold *= 0.9f;
+        }
+        else if(species.Count == numberOfSpecies)
+        {
+            Debug.Log(":))))))))))");
+        }
+        else
+        {
+            Species.similarityThreshold /= 0.9f;
+        }
 
-        EvaluateAllFitness(species);
+
+            EvaluateAllFitness(species);
 
         float averageFitness = 0;
 

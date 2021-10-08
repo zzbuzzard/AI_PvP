@@ -50,7 +50,7 @@ public class Game
     const float bulletMoveSpeed = 12.0f; // previously 5
     const int bulletFrameLife = 30;
 
-    const float reloadTime = 0.8f;
+    const float reloadTime = 0.01f;
     const int frameReloadTime = (int)(reloadTime / spf);
 
     public float maxMatchTime = 50.0f; // Max 50sec matches

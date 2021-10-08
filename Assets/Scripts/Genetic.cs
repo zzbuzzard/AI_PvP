@@ -31,7 +31,7 @@ public abstract class Genetic
              + 5 * accuracy                          // 5 points for 100% accuracy
              - p.shotsFired                          // -1 point per shot fired
              ;
-        return Mathf.Max(fitness, 0.0f);
+        return Mathf.Max(p.shotsFired, 0.0f);
 
         //             + p.life                               // 3 points for a perfect run, 2 for one hit, 1 for two hits
         //             + p.frameOfDeath * Game.spf / 20.0f    // number of seconds alive;  one minute is 3 points

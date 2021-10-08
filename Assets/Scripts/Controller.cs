@@ -16,7 +16,7 @@ public class Controller : MonoBehaviour
         List<NeatPlayer> pop = new List<NeatPlayer>();
 
         // Populate with 100 layered AI players
-        for (int i=0; i<30; i++)
+        for (int i=0; i<200; i++)
         {
             pop.Add(new NeatPlayer(new NeatNet(new Genome(AIPlayer.numInputs, AIPlayer.numOutputs))));
             //pop.Add(AIPlayer.MakeLayeredAIPlayer());
