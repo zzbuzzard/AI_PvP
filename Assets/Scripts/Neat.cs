@@ -186,6 +186,8 @@ public class Neat : Genetic
             float myfit = speshee.GetFitness();
             int size = (int)(myfit / averageFitness);
 
+            if (size == 0) size = 1;
+
             if (spIndex == species.Count - 1)
             {
                 size = N - ais.Count; 
@@ -206,7 +208,8 @@ public class Neat : Genetic
 
                 ais.Add(new NeatPlayer(new NeatNet(genom)));
             }
-            if (size != 0)
+            
+            if (size > 0)
                 ais.Add(speshee.players[0]); // Keep the best one >:)
         }
     }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-// Sits still, shoots left
+// Sits still, does nothing, like me
 public class RobotPlayer0 : GenericPlayer
 {
     public override GameInput GetInput(Game game)
@@ -14,22 +14,26 @@ public class RobotPlayer0 : GenericPlayer
 
 
 
-// Sits still, shoots left
+// Sits still, shoots left/right
 public class RobotPlayer1 : GenericPlayer
 {
+    private bool left = true;
     public override GameInput GetInput(Game game)
     {
-        return new GameInput(0, false, true, 0.0f);
+        left = !left;
+        return new GameInput(0, false, true, left ? 0.0f : Mathf.PI);
     }
 }
 
 
-// Sits still, shoots left, jumps
+// Sits still, shoots left/right, jumps
 public class RobotPlayer2 : GenericPlayer
 {
+    private bool left = true;
     public override GameInput GetInput(Game game)
     {
-        return new GameInput(0, true, true, 0.0f);
+        left = !left;
+        return new GameInput(0, true, true, left ? 0.0f : Mathf.PI);
     }
 }
 
