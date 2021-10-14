@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Constants;
 
 
 // 0 ... inputs-1                      are input nodes
@@ -59,22 +60,16 @@ public struct ConnectionGene
 public class Genome
 {
     private static int globalInnovationNumber = 0;
-    public float fitness = 0;
+    public float fitness = 0; // TODO: ...
 
-    private int inputs, outputs;
     public readonly List<ConnectionGene> genes;
 
-    public Genome(int inputs, int outputs)
+    public Genome() : this(new List<ConnectionGene>())
     {
-        this.inputs = inputs;
-        this.outputs = outputs;
-        this.genes = new List<ConnectionGene>();
     }
 
-    public Genome(int inputs, int outputs, List<ConnectionGene> genes)
+    public Genome(List<ConnectionGene> genes)
     {
-        this.inputs = inputs;
-        this.outputs = outputs;
         this.genes = genes;
     }
 
@@ -110,16 +105,16 @@ public class Genome
 
             int loops = 10;
             // Loop until we find a valid pair    (maybe just try a few times then give up idk) this is ugly wtf
-            while (0 != loops--) // TODO: uhh... this won't always terminate. for example if we have two nodes 1 and 2, and the edge 1->2 exists, we cant add any new ones.
+            while (0 != loops--)
             {
                 // Must be non-output
-                int start = Random.Range(0, maxNode + 1 - old.outputs);
-                if (start >= old.inputs) start += old.outputs;
+                int start = Random.Range(0, maxNode + 1 - numOutputs);
+                if (start >= numInputs) start += numOutputs;
                 // shift (0 ... whatever) to (0 ... old.inputs-1) U (old.inputs + old.outputs ... maxnode)   i.e. not an output
 
                 // Must be non-input
-                int end = Random.Range(0, maxNode + 1 - old.inputs);
-                end += old.inputs;   // shift (0 ... whatever) to (inputs ... maxnode)   i.e. not an input
+                int end = Random.Range(0, maxNode + 1 - numInputs);
+                end += numInputs;   // shift (0 ... whatever) to (inputs ... maxnode)   i.e. not an input
 
                 // Now, we must check
                 // 1) Does this edge already exist?           O(E)
@@ -172,7 +167,7 @@ public class Genome
             while (_-->0 && old.genes[index].disabled) index = Random.Range(0, old.genes.Count);
 
             // old.genes[index].disabled = true;           // Doesn't work because structs are weird and possibly immutable
-            old.genes[index] = old.genes[index].Disable();
+            // old.genes[index] = old.genes[index].Disable();
 
             // Get node IDs
             int new_id = maxNode + 1;
@@ -187,11 +182,11 @@ public class Genome
 
             old.genes.Add(c1);
             old.genes.Add(c2);
+
+            old.genes.RemoveAt(index);
         }
     }
 
-    const float weightChangeChance = 0.2f;
-    const float weightChangeRange = 0.5f;
     public static void WeightMutate(Genome old)
     {
         for (int i=0; i<old.genes.Count; i++)
@@ -212,9 +207,8 @@ public class Genome
     {
         if (old.genes.Count == 0) return;
         int i = Random.Range(0, old.genes.Count);
-        old.genes[i] = old.genes[i].DiEnsable();
-
-
+        old.genes.RemoveAt(i);
+//        old.genes[i] = old.genes[i].DiEnsable();
     }
 
     // Structurally or weighturally mutate
@@ -222,24 +216,20 @@ public class Genome
     {
         float f = Random.Range(0, 1.0f);
 
-        if (f < 1.0f / 3.0f) StructuralMutate(old);
-        else
-        {
-            if (f < 2.0f / 3.0f) DisableMutate(old);
-            //if (f < 2.0f / 3.0f) Debug.Log("Wahoo");
-            else WeightMutate(old);
-        }
+        if (f < 0.05f) StructuralMutate(old);    // 5%
+        else if (f < 0.2f) DisableMutate(old);   // 18%
+        else WeightMutate(old);                  // 80%
     }
 
     public DAGNet MakeNet()
     {
-        return new DAGNet(inputs, outputs, genes);
+        return new DAGNet(genes);
     }
 
     // TODO: If this is any kind of bottleneck, it could be sped up by carrying this value around
     public int GetMaxNodeNumber()
     {
-        int max = inputs + outputs - 1; // this is the ID of the last output
+        int max = numInputs + numOutputs - 1; // this is the ID of the last output
         foreach (ConnectionGene c in genes)
         {
             if (c.fromNode > max) max = c.fromNode;
@@ -249,16 +239,16 @@ public class Genome
     }
 
 
-    const float disjointCoeff = 0.5f;
-    const float excessCoeff = 0.3f;
-    const float weightCoeff = 0.2f;
     public float GetSimilarity(Genome other)
     {
         //All innovation numbers
         HashSet<int> innovationNumbers = new HashSet<int>();
+        IDictionary<int, ConnectionGene> ourGenes = new Dictionary<int, ConnectionGene>();
+        IDictionary<int, ConnectionGene> otherGenes = new Dictionary<int, ConnectionGene>();
+
         int ourMax = 0;
         int otherMax = 0;
-        IDictionary<int, ConnectionGene> ourGenes = new Dictionary<int, ConnectionGene>();
+
         foreach (ConnectionGene gene in genes)
         {
             ourGenes.Add(gene.innovationNumber, gene);
@@ -266,21 +256,22 @@ public class Genome
             if (gene.innovationNumber > ourMax) ourMax = gene.innovationNumber;
         }
 
-        IDictionary<int, ConnectionGene> otherGenes = new Dictionary<int, ConnectionGene>();
         foreach (ConnectionGene gene in other.genes)
         {
             otherGenes.Add(gene.innovationNumber, gene);
             innovationNumbers.Add(gene.innovationNumber);
             if (gene.innovationNumber > otherMax) otherMax = gene.innovationNumber;
         }
+
         float delta = 0;
+
         int maxGenes = Mathf.Max(ourGenes.Count, otherGenes.Count);
-        if(maxGenes == 0)
-        {
+        if(maxGenes == 0) // Nobody has any genes; just return 0
             return 0.0f;
-        }
+
         float weightDifferences = 0;
         int matchingGenes = 0;
+
         // Calculate via the formula c1E/N, + c2D/N + c3W
         foreach (int inum in innovationNumbers)
         {
@@ -289,7 +280,6 @@ public class Genome
             {
                 weightDifferences += weightCoeff * Mathf.Abs(ourGenes[inum].weight - otherGenes[inum].weight);
                 matchingGenes++;
-
             }
             // Disjoint/Excess
             else
@@ -299,14 +289,14 @@ public class Genome
                 {
                     delta += excessCoeff / maxGenes;
                 }
-                //Disjoing
+                // Disjoint
                 else
                 {
                     delta += disjointCoeff / maxGenes;
                 }
             }
         }
-        if (matchingGenes == 0) { weightDifferences = 0; } else { weightDifferences /= matchingGenes; }
+        if (matchingGenes != 0) weightDifferences /= matchingGenes;
         
         delta += weightDifferences;
 
@@ -314,62 +304,55 @@ public class Genome
 
     }
 
-    // TODO: Create a new Genome which is a crossover between a and b
+    public string GenomeStats()
+    {
+        int d = 0; foreach (ConnectionGene g in genes) d += g.disabled?1:0;
+
+        return "Number of genes: " + genes.Count +
+               "\nOf which " + d + " are disabled";
+    }
+
     // Note: I believe this has to leave a and b unmodified, as they will be used for future crossovers
     public static Genome Crossover(Genome a, Genome b)
     {
         //All innovation numbers
         HashSet<int> innovationNumbers = new HashSet<int>();
         IDictionary<int, ConnectionGene> aGenes = new Dictionary<int, ConnectionGene>();
+        IDictionary<int, ConnectionGene> bGenes = new Dictionary<int, ConnectionGene>();
+
         foreach (ConnectionGene gene in a.genes)
         {
             aGenes.Add(gene.innovationNumber, gene);
             innovationNumbers.Add(gene.innovationNumber);
         }
 
-        IDictionary<int, ConnectionGene> bGenes = new Dictionary<int, ConnectionGene>();
         foreach (ConnectionGene gene in b.genes)
         {
             bGenes.Add(gene.innovationNumber, gene);
             innovationNumbers.Add(gene.innovationNumber);
         }
 
-        // God what is this mess aaaaaaaaaaaaaa
         IDictionary<int, ConnectionGene> dominantParent;
-        if(a.fitness > b.fitness){
-            dominantParent = aGenes;
-        }
-        else if(b.fitness > a.fitness)
-        {
-            dominantParent = bGenes;
-
-        }else if(Random.Range(0.0f,1.0f) > 0.5f)
-        {
-            dominantParent = aGenes;
-        }
-        else
-        {
-            dominantParent = bGenes;
-        }
-
+        if (a.fitness > b.fitness)      dominantParent = aGenes;
+        else if (b.fitness > a.fitness) dominantParent = bGenes;
+        else                            dominantParent = (Random.Range(0.0f, 1.0f) > 0.5f ? aGenes : bGenes);
+        
         List<ConnectionGene> newGenes = new List<ConnectionGene>();
         foreach (int inum in innovationNumbers)
         {
             if (aGenes.ContainsKey(inum) && bGenes.ContainsKey(inum))
             {
                 newGenes.Add(dominantParent[inum]);
-            }else if (aGenes.ContainsKey(inum))
-            {
-                newGenes.Add(aGenes[inum]);
             }
             else
             {
-                newGenes.Add(bGenes[inum]);
+                if (aGenes.ContainsKey(inum)) newGenes.Add(aGenes[inum]);
+                else newGenes.Add(bGenes[inum]);
             }
         }
 
         // TODO: Need to check if cyclic
-        return new Genome(a.inputs, a.outputs, newGenes);
+        return new Genome(newGenes);
     }
 
 

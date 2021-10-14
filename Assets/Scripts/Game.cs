@@ -47,7 +47,7 @@ public class Game
     const float gravity = 5.0f;
     const float playerJumpVelocity = 5.0f;
     const float playerMoveSpeed = 2.5f;
-    const float bulletMoveSpeed = 12.0f; // previously 5
+    const float bulletMoveSpeed = 8.0f; // previously 12
     const int bulletFrameLife = 30;
 
     const float reloadTime = 0.8f;
@@ -61,7 +61,7 @@ public class Game
     // (0, 0) is the bottom left.
     // All squares are centered, so this means there is a block with center at (0, 0)
     private MapBlock[,] map;
-    public static int xsize { get; private set; } = 12;  // 40 x 10 works well with 5 - 8 players
+    public static int xsize { get; private set; } = 20;  // 40 x 10 works well with 5 - 8 players
     public static int ysize { get; private set; } = 8;
 
     public int framesPassed { get; private set; }

@@ -16,14 +16,22 @@ public abstract class Genetic
         float accuracy = p.shotsHit / (float)(p.shotsFired == 0 ? 1 : p.shotsFired);
 
         float endBonus = 0.0f;
-        if (p.endType == EndType.KILLED)  endBonus = -5.0f;
+        if (p.endType == EndType.KILLED)  endBonus = -10.0f;
         if (p.endType == EndType.TIMEOUT) endBonus = 0.0f;
-        if (p.endType == EndType.WON)     endBonus = 1000.0f;
-        if (p.endType == EndType.WALL)    endBonus = -10.0f;
+        if (p.endType == EndType.WON)     endBonus = 100.0f;
+        if (p.endType == EndType.WALL)    endBonus = -1000.0f;
 
         float percentageDiedBefore = p.diedBefore / (float)RankedGenetic.FFA_size;
+        float lifeProp = p.life / (float)GenericPlayer.maxlife;
 
-        return Mathf.Max(p.shotsHit * 50 + p.life + endBonus + p.frameOfDeath * Game.spf / 10.0f, 0.0f);
+        return Mathf.Max(0.0f,
+                         p.shotsHit * 50                        // 50 points per hit
+                       + lifeProp * lifeProp * 20               // 20 bonus points for max life
+                       + endBonus                               // 100 bonus points for a win
+                       + p.frameOfDeath * Game.spf / 2.0f       // 0.5 points per second
+                       + p.shotsFired / 5.0f
+                       // TODO: Force them to move left/right
+                       );
 
         float fitness = 
              + endBonus

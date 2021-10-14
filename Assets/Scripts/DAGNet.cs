@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Constants;
 
 // Class for a non-layered neural network
 public class DAGNet
@@ -14,15 +15,11 @@ public class DAGNet
 
     List<int> topoSort;
 
-    int numInputs, numOutputs;
-
-    public DAGNet(int numInputs, int numOutputs, List<ConnectionGene> genes)
+    public DAGNet(List<ConnectionGene> genes)
     {
         topoSort = new List<int>();
         nodeActivation = new List<float>();
 
-        this.numInputs = numInputs;
-        this.numOutputs = numOutputs;
         outputArray = new float[numOutputs];
 
         N = numInputs + numOutputs;
