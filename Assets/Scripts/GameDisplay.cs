@@ -16,7 +16,7 @@ public class GameDisplay : MonoBehaviour
 
     public bool gameInProgress = false;
 
-    public void Simulate(List<GenericPlayer> players, bool timeless = false)
+    public void Simulate(Game g, bool timeless = false)
     {
         // Clean up previous simulation
         foreach (GameObject x in playerObjs) Destroy(x);
@@ -29,12 +29,12 @@ public class GameDisplay : MonoBehaviour
 
         gameInProgress = true;
 
-        this.players = players;
+        players = g.players;
 
         foreach (GenericPlayer p in players)
             MakePlayer(p);
 
-        g = new Game(players);
+        this.g = g;
         for (int x = 0; x < Game.xsize; x++)
         {
             for (int y = 0; y < Game.ysize; y++)

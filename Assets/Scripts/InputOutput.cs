@@ -7,19 +7,18 @@ using UnityEngine;
 public static class InputOutput
 {
     // Inputs:
-    //  1/0 encoding of a 5x5 grid around me (25 squares * 2 types = 50)
-    public const int gridX = 2; // 2 on either side
-    public const int gridY = 2; // 2 on either side
+    //  1/0 encoding of a grid around the player
+    public const int gridX = 1; // (on either side)
+    public const int gridY = 1; // (on either side)
     public const int inputsGrid = (2 * gridX + 1) * (2 * gridY + 1);
 
     //  My info:
     //   - Position (2)
     //   - Health (1)
     //   - Velocity (2)
-    //   - On floor (1)
     //   - Num jumps (1)
     //   - JumpLast (1)
-    public const int inputsMe = 8;
+    public const int inputsMe = 7;
 
     //  Per player
     //   - Position              (2)
@@ -45,7 +44,7 @@ public static class InputOutput
     // Outputs:
     //  direction (2)
     //  is shooting (1)
-    //  angle (2) - directionX, directionY
+    //  angle (1)
     //  jump (1) - Y/N
     public const int numOutputs = 6;
 
@@ -74,9 +73,8 @@ public static class InputOutput
         inputArr[index + 2] = p.life / (float)GenericPlayer.maxlife;   // My life
         inputArr[index + 3] = p.vx;
         inputArr[index + 4] = p.vy;                       // Velocity
-        inputArr[index + 5] = p.onFloor ? 1.0f : 0.0f;    // On floor
-        inputArr[index + 6] = p.jumps / (float)GenericPlayer.numjumps;// Number of jumps remaining
-        inputArr[index + 7] = p.jumpLast ? 1.0f : 0.0f;   // Was jump held last time? TODO: Add memory and remove
+        inputArr[index + 5] = p.jumps / (float)GenericPlayer.numjumps;// Number of jumps remaining
+        inputArr[index + 6] = p.jumpLast ? 1.0f : 0.0f;   // Was jump held last time? TODO: Add memory and remove
     }
 
     private static void SetPlayer(int index, GenericPlayer p, Game game, GenericPlayer q)
@@ -92,42 +90,38 @@ public static class InputOutput
             inputArr[index + 2] = q.life / (float)GenericPlayer.maxlife;   // Health
             inputArr[index + 3] = dx / dist;
             inputArr[index + 4] = dy / dist;                 // dx, dy
-            inputArr[index + 5] = dist;                      // dist
+            inputArr[index + 5] = dist / Game.xsize;         // dist
             inputArr[index + 6] = q.vx;
             inputArr[index + 7] = q.vy;                      // velocity
         }
         else
         {
-            // No player: set life = 0. dist = 100
+            // No player: set life = 0. dist = 5
             inputArr[index + 2] = 0.0f;
-            inputArr[index + 5] = 100.0f;
+            inputArr[index + 5] = 5.0f;
         }
     }
 
     private static void SetBullet(int index, GenericPlayer p, Game game, Bullet b)
     {
-        if (index + 6 >= inputArr.Length)
-        {
-            Debug.Log("UH OH");
-        }
         if (b != null)
         {
             float dx = b.x - p.x;
             float dy = b.y - p.y;
             float dist = Mathf.Sqrt(dx * dx + dy * dy);
 
-            inputArr[index]     = p.x / Game.xsize;
-            inputArr[index + 1] = p.y / Game.ysize;          // Position
+            inputArr[index]     = b.x / Game.xsize;
+            inputArr[index + 1] = b.y / Game.ysize;          // Position
             inputArr[index + 2] = dx / dist;
             inputArr[index + 3] = dy / dist;                 // dx, dy
-            inputArr[index + 4] = dist;                      // dist
-            inputArr[index + 5] = p.vx;
-            inputArr[index + 6] = p.vy;                      // velocity
+            inputArr[index + 4] = dist / Game.xsize;         // dist
+            inputArr[index + 5] = b.vx;
+            inputArr[index + 6] = b.vy;                      // velocity
         }
         else
         {
-            // if null, set distance to 100 and leave the rest on 0
-            inputArr[index + 4] = 100.0f;
+            // if null, set distance to 5 and leave the rest on 0
+            inputArr[index + 4] = 5.0f;
         }
     }
 
@@ -153,6 +147,7 @@ public static class InputOutput
             if (i < game.players.Count)
             {
                 if (game.players[i].gameID == p.gameID) continue;
+
                 SetPlayer(offset, p, game, game.players[i]);
             }
             else
@@ -165,9 +160,15 @@ public static class InputOutput
         Debug.Assert(count == numPlayers, "Only counted " + count + " players, instead of " + numPlayers);
         Debug.Assert(offset == inputsGrid + inputsMe + inputsPerPlayer * numPlayers, "Incorrect offset");
 
+        
         List<Bullet> bullets = new List<Bullet>();
+
+        // Collect all bullets *not shot by us*
         foreach (Bullet b in game.bullets)
-            bullets.Add(b);
+        {
+            if (b.shooterID != p.gameID)
+                bullets.Add(b);
+        }
 
         // Sort the bullets by distance to us
         bullets.Sort(new BulletComparer(p));
@@ -200,12 +201,12 @@ public static class InputOutput
         float right = outputArr[1];
 
         float shoot = outputArr[2];
-        float dx    = outputArr[3];
-        float dy    = outputArr[4];
+        float dy = outputArr[3];
+        float dx = outputArr[4];
 
         float jump = outputArr[5];
 
-        // TODO: u sure this works?
+        // Does this even work
         float angle = Mathf.Atan2(dy, dx);
 
         bool bshoot = false,

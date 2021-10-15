@@ -8,6 +8,7 @@ public class Test
     [RuntimeInitializeOnLoadMethod]
     public static void RunTests()
     {
+        Debug.Log("Number of inputs: " + numInputs);
         Debug.Log("Running tests");
         DagTest1();
         DagTest2();

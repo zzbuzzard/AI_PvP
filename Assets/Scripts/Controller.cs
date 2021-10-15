@@ -15,8 +15,7 @@ public class Controller : MonoBehaviour
     {
         List<NeatPlayer> pop = new List<NeatPlayer>();
 
-        // Populate with 100 layered AI players
-        for (int i=0; i<50; i++)
+        for (int i=0; i<100; i++)
         {
             pop.Add(new NeatPlayer(new NeatNet(new Genome())));
             //pop.Add(AIPlayer.MakeLayeredAIPlayer());
@@ -50,8 +49,23 @@ public class Controller : MonoBehaviour
         qs.Add(ps[0]);
         qs.Add(ps[1]);
 
-        d.Simulate(qs);
+        d.Simulate(new Game(qs));
     }
+
+    public void ShowTrialN(int n)
+    {
+        ShowTrial(Trial.trials[n]);
+    }
+
+    public void ShowTrial(Trial t)
+    {
+        if (d.gameInProgress) StopGame();
+
+        List<GenericPlayer> ps = population.GetPopulation();
+        
+        d.Simulate(t.CreateTrial(ps[0]));
+    }
+
 
     public void PlayGame()
     {
@@ -64,7 +78,7 @@ public class Controller : MonoBehaviour
 
         qs.Add(new HumanPlayer());
 
-        d.Simulate(qs, true);
+        d.Simulate(new Game(qs), true);
     }
 
     public void StopGame()

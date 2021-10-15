@@ -5,9 +5,9 @@ using UnityEngine;
 
 public abstract class NeuralNet
 {
-    // Tanh
     public static float ActivationFunction(float f)
     {
+        // return (f > 0.0f ? f : f / 8);  // Leaky relu
         return (float)Math.Tanh(f);
     }
 

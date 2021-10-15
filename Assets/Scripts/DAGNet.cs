@@ -95,7 +95,7 @@ public class DAGNet
         for (int i = 0; i < numInputs; i++) nodeActivation[i] = inputs[i];
 
         // Set everything else to 0
-        for (int i = numInputs + 1; i < N; i++) nodeActivation[i] = 0;
+        for (int i = numInputs; i < N; i++) nodeActivation[i] = 0;
 
         // Use topological sort
         foreach (int n in topoSort)
@@ -118,6 +118,31 @@ public class DAGNet
             outputArray[i] = nodeActivation[i + numInputs];
 
         return outputArray;
+    }
+
+    private string NameNode(int i)
+    {
+        if (i < numInputs) return "i" + i;
+        i -= numInputs;
+        if (i < numOutputs) return "o" + i;
+        i -= numOutputs;
+        return "x" + i;
+    }
+
+    public void Print()
+    {
+        string s = "Number of nodes: " + N + "\n";
+        for (int i=0; i<N; i++)
+        {
+            s += "Node " + NameNode(i) + ": ";
+            for (int j=0; j<edges[i].Count; j++)
+            {
+                s += NameNode(edges[i][j]) + "(w=" + edgeWeights[i][j] + ")  ";
+            }
+            s += "\n";
+        }
+
+        Debug.Log(s);
     }
 }
 

@@ -53,6 +53,10 @@ public class Neat : Genetic
         }
     }
 
+    int generation = 0;
+    const int addNewOn = 100;
+    const int maxNumEnemies = 1;
+
     List<NeatPlayer> ais;
     int N;
 
@@ -115,6 +119,44 @@ public class Neat : Genetic
 
     private float maxFitness = 0.0f;
     private NeatPlayer fittest = null;
+
+    private void EvaluateFitness(NeatPlayer p)
+    {
+        float trialWeight = 100.0f;
+
+        p.fitness = 0.1f;
+
+        int gamesPlayed = 0;
+
+        foreach (GenericPlayer enemy in enemies)
+        {
+            List<GenericPlayer> gs;
+
+            gs = new List<GenericPlayer>() { p, enemy };
+            Game.SimulateGame(gs);
+            p.fitness += Genetic.GetScore1(p);
+            gamesPlayed++;
+
+            gs = new List<GenericPlayer>() { enemy, p };
+            Game.SimulateGame(gs);
+            p.fitness += Genetic.GetScore1(p);
+            gamesPlayed++;
+        }
+
+        p.fitness /= gamesPlayed;
+
+        foreach (Trial t in Trial.trials)
+        {
+            p.fitness += trialWeight * Game.Trial(p, t);
+        }
+
+        // If it's actually any good, prioritise less complex species
+        //if (p.fitness > 50.0f)
+        //{
+        //    p.fitness = Mathf.Max(0.0f, p.fitness + (200 - p.GetGenome().genes.Count / 20.0f));
+        //}
+    }
+
     private void EvaluateAllFitness(List<Species> species)
     {
         maxFitness = 0.0f;
@@ -124,43 +166,16 @@ public class Neat : Genetic
         {
             foreach (NeatPlayer p in s.players)
             {
-                p.fitness = 0.0f;
-                int gamesPlayed = 0;
+                EvaluateFitness(p);
 
-                foreach (GenericPlayer enemy in enemies)
-                {
-                    List<GenericPlayer> gs;
-
-                    gs = new List<GenericPlayer>() { p, enemy };
-                    Game.SimulateGame(gs);
-                    p.fitness += Genetic.GetScore1(p);
-                    gamesPlayed++;
-
-                    gs = new List<GenericPlayer>() { enemy, p };
-                    Game.SimulateGame(gs);
-                    p.fitness += Genetic.GetScore1(p);
-                    gamesPlayed++;
-                }
-
-                p.fitness /= gamesPlayed;
-
-                // If it's actually any good, prioritise less complex species
-                //if (p.fitness > 50.0f)
-                //{
-                //    p.fitness = Mathf.Max(0.0f, p.fitness + (200 - p.GetGenome().genes.Count / 20.0f));
-                //}
-
-                if (p.fitness > maxFitness)
+                if (fittest == null || p.fitness > maxFitness)
                 {
                     maxFitness = p.fitness;
                     fittest = p;
                 }
             }
-        }
 
-        // Sort within each species
-        foreach (Species s in species)
-        {
+            // Sort by fitness
             s.players.Sort(new NeatComparator());
         }
     }
@@ -227,10 +242,15 @@ public class Neat : Genetic
                 ais.Add(speshee.players[0]); // Keep the best one >:)
         }
 
-        if (avg_fit_real > 200.0f)
+        generation++;
+
+        if (generation % addNewOn == 0)
         {
             Debug.Log("Adding a new enemy! There are now " + enemies.Count + " enemies");
             enemies.Add(fittest);
+
+            if (enemies.Count > maxNumEnemies)
+                enemies.RemoveAt(0);
         }
     }
 }

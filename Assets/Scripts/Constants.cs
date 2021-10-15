@@ -11,7 +11,7 @@ public static class Constants
     public const float excessCoeff = 0.3f;
     public const float weightCoeff = 0.2f;
 
-    public const float similarityThreshold = 0.5f;
+    public const float similarityThreshold = 0.35f; // Was 0.5
     public const float breedSpeciesPercent = 0.25f;
 
     public const int numInputs = InputOutput.numInputs;

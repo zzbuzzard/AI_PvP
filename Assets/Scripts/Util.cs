@@ -44,4 +44,15 @@ public static class Util
         for (int i = 0; i < n; i++) arr[i] = t;
         return arr;
     }
+
+    public static string GetArrString<T>(T[] arr)
+    {
+        string s = "[";
+        for (int i=0; i<arr.Length; i++)
+        {
+            s += arr[i].ToString();
+            if (i != arr.Length - 1) s += ", ";
+        }
+        return s + "]";
+    }
 }

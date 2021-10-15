@@ -24,6 +24,8 @@ public struct GameInput
         this.shoot = shoot;
         this.shootAngle = shootAngle;
     }
+
+    public readonly static GameInput nothing = new GameInput(0, false, false, 0.0f);
 }
 
 public class Bullet
@@ -48,10 +50,10 @@ public class Game
     const float playerJumpVelocity = 5.0f;
     const float playerMoveSpeed = 2.5f;
     const float bulletMoveSpeed = 8.0f; // previously 12
-    const int bulletFrameLife = 30;
+    const int bulletFrameLife = 40;
 
-    const float reloadTime = 0.8f;
-    const int frameReloadTime = (int)(reloadTime / spf);
+    public const float reloadTime = 0.8f;
+    public const int frameReloadTime = (int)(reloadTime / spf);
 
     public float maxMatchTime = 50.0f; // Max 50sec matches
 
@@ -69,6 +71,15 @@ public class Game
     public List<Bullet> bullets;
     public List<GenericPlayer> players { get; private set; }
     GameInput[] inputs;
+
+    Trial trial;
+
+    public static float Trial(GenericPlayer p, Trial t)
+    {
+        Game g = t.CreateTrial(p);
+        while (!g.Step()) { }
+        return t.GetScore(g);
+    }
 
     public static void SimulateGame(List<GenericPlayer> p)
     {
@@ -133,74 +144,87 @@ public class Game
         }
     }
 
+    public Game(List<GenericPlayer> p, Trial t) : this(p)
+    {
+        trial = t;
+    }
+
     // Returns true iff the game has ended
     public bool Step()
     {
-        bool gameOver = true;
-        GenericPlayer winner = null;
-        // Check if the game is over
-        for (int i=0; i<players.Count; i++)
+        // During a trial, we don't check for winners
+        if (trial == null)
         {
-            if (players[i].life > 0)
-            {
-                if (winner != null)
-                {
-                    gameOver = false;
-                    break;
-                }
-                winner = players[i];
-            }
-        }
-
-        // If the match has been going on for more than (maxMatchTime) seconds, it's over
-        if (framesPassed > maxMatchTime / spf)
-        {
-            for (int i=0; i<players.Count; i++)
+            bool gameOver = true;
+            GenericPlayer winner = null;
+            // Check if the game is over
+            for (int i = 0; i < players.Count; i++)
             {
                 if (players[i].life > 0)
                 {
-                    players[i].frameOfDeath = framesPassed;
-                    players[i].endType = EndType.TIMEOUT;
-                }
-            }
-
-            gameOver = true;
-            winner = null;
-        }
-
-        if (gameOver)
-        {
-            // TODO: Produce ranking for players
-            // NOTE: Draws should go down, so if 4 people survive at the end then they are all 4th, one person was 5th
-            if (winner != null)
-            {
-                winner.frameOfDeath = framesPassed;
-                winner.endType = EndType.WON;
-            }
-
-            // Now, for each player, work out how many players died before them
-            List<Pair<int, int>> deathTimes = new List<Pair<int, int>>();
-            for (int i=0; i<players.Count; i++)
-            {
-                deathTimes.Add(new Pair<int,int>(players[i].frameOfDeath, i));
-            }
-            deathTimes.Sort();
-
-            int diedBefore = 0;
-            for (int i=0; i<players.Count; i++)
-            {
-                if (i > 0)
-                {
-                    if (deathTimes[i - 1].fst != diedBefore)
+                    if (winner != null)
                     {
-                        diedBefore = i;
+                        gameOver = false;
+                        break;
                     }
-                    // otherwise, the same as before
+                    winner = players[i];
                 }
-                players[deathTimes[i].snd].diedBefore = diedBefore;
             }
 
-            return true;
+            // If the match has been going on for more than (maxMatchTime) seconds, it's over
+            if (framesPassed > maxMatchTime / spf)
+            {
+                for (int i = 0; i < players.Count; i++)
+                {
+                    if (players[i].life > 0)
+                    {
+                        players[i].frameOfDeath = framesPassed;
+                        players[i].endType = EndType.TIMEOUT;
+                    }
+                }
+
+                gameOver = true;
+                winner = null;
+            }
+
+            if (gameOver)
+            {
+                // TODO: Produce ranking for players
+                // NOTE: Draws should go down, so if 4 people survive at the end then they are all 4th, one person was 5th
+                if (winner != null)
+                {
+                    winner.frameOfDeath = framesPassed;
+                    winner.endType = EndType.WON;
+                }
+
+                // Now, for each player, work out how many players died before them
+                List<Pair<int, int>> deathTimes = new List<Pair<int, int>>();
+                for (int i = 0; i < players.Count; i++)
+                {
+                    deathTimes.Add(new Pair<int, int>(players[i].frameOfDeath, i));
+                }
+                deathTimes.Sort();
+
+                int diedBefore = 0;
+                for (int i = 0; i < players.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        if (deathTimes[i - 1].fst != diedBefore)
+                        {
+                            diedBefore = i;
+                        }
+                        // otherwise, the same as before
+                    }
+                    players[deathTimes[i].snd].diedBefore = diedBefore;
+                }
+
+                return true;
+            }
+        }
+        else
+        {
+            if (trial.Apply(this)) return true;
         }
 
         // Get all players' inputs.
