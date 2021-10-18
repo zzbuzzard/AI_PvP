@@ -6,9 +6,20 @@ using UnityEngine;
 // A trial modifies the Game every step before input is given
 public abstract class Trial
 {
-    public static readonly Trial[] trials = new Trial[] { new TargetPractice(0), new TargetPractice(1), new TargetPractice(7) };
+    public static readonly Trial[] trials = new Trial[] { new TargetPractice(2, true), new TargetPractice(4, true), new TargetPractice(7, true)};
 
     protected System.Random r;
+
+    protected static void ZeroGame(Game g)
+    {
+        for (int x = 0; x < Game.xsize; x++)
+        {
+            for (int y = 1; y < Game.ysize; y++)
+            {
+                g.SetTile(x, y, MapBlock.EMPTY);
+            }
+        }
+    }
 
     public abstract Game CreateTrial(GenericPlayer p);  // Note: trials are one player (but could change)
     public abstract bool Apply(Game g);                 // Modify the Game object, return true iff trial over
@@ -21,6 +32,7 @@ public class TargetPractice : Trial
     int hits, seed;
 
     float totWaitTime, lastHitTime;
+    public bool zeroMap;
 
     const float trialTime = 30.0f;
 
@@ -29,9 +41,10 @@ public class TargetPractice : Trial
        public override GameInput GetInput(Game game) { return GameInput.nothing; }
     }
 
-    public TargetPractice(int seed)
+    public TargetPractice(int seed, bool zeroMap)
     {
         this.seed = seed;
+        this.zeroMap = zeroMap;
     }
 
     // Just changes x, y vars
@@ -80,6 +93,9 @@ public class TargetPractice : Trial
 
         TargetPlayer t = new TargetPlayer();
         Game g = new Game(new List<GenericPlayer>() { p, t }, this);
+
+        if (zeroMap)
+            ZeroGame(g);
 
         // Spawn the player randomly!
         MovePosition();

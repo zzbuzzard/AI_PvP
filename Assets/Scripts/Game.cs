@@ -49,8 +49,8 @@ public class Game
     const float gravity = 5.0f;
     const float playerJumpVelocity = 5.0f;
     const float playerMoveSpeed = 2.5f;
-    const float bulletMoveSpeed = 8.0f; // previously 12
-    const int bulletFrameLife = 40;
+    const float bulletMoveSpeed = 10.0f; // previously 8
+    const int bulletFrameLife = 60; // was 40
 
     public const float reloadTime = 0.8f;
     public const int frameReloadTime = (int)(reloadTime / spf);
@@ -64,7 +64,7 @@ public class Game
     // All squares are centered, so this means there is a block with center at (0, 0)
     private MapBlock[,] map;
     public static int xsize { get; private set; } = 20;  // 40 x 10 works well with 5 - 8 players
-    public static int ysize { get; private set; } = 8;
+    public static int ysize { get; private set; } = 10;
 
     public int framesPassed { get; private set; }
 
@@ -85,6 +85,11 @@ public class Game
     {
         Game g = new Game(p);
         while (!g.Step()) { }
+    }
+
+    public void SetTile(int x, int y, MapBlock b)
+    {
+        map[x, y] = b;
     }
 
     public MapBlock GetTile(int x, int y)
@@ -142,6 +147,10 @@ public class Game
             }
             //map[(int)(spacing * (i + 0.5f)), 4] = MapBlock.WALL;
         }
+
+        //map[xsize / 2, 2] = MapBlock.WALL;
+        //map[xsize / 2, 3] = MapBlock.WALL;
+        //map[xsize / 2, 4] = MapBlock.WALL;
     }
 
     public Game(List<GenericPlayer> p, Trial t) : this(p)
@@ -373,7 +382,7 @@ public class Game
         // Move bullets, check for bullet collisions (with walls and players)
         for (int i=0; i<bullets.Count; i++)
         {
-            //bullets[i].vy -= gravity * spf;
+            bullets[i].vy -= gravity * spf;
 
             bullets[i].x += bullets[i].vx * spf;
             bullets[i].y += bullets[i].vy * spf;

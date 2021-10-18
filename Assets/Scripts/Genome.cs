@@ -73,132 +73,146 @@ public class Genome
         this.genes = genes;
     }
 
-    // Directly modifies 'old'
-    // If my understanding is right, we never mutate and keep an old copy
-    static public void StructuralMutate(Genome old)
+    public static void NewEdgeMutate(Genome old)
     {
         // Highest ID of any node in this genome
         int maxNode = old.GetMaxNodeNumber();
 
-        // If old.genes.Count == 0, we should always make a new connection (not split)
-        if (old.genes.Count == 0 || Random.Range(0.0f, 1.0f) < 0.5f)
+        // New connection
+        // 1) Generate connection map
+        // 2) Pick start (must be non-output)
+        // 3) Pick end (must be non-input)
+        // 4) Check that resultant graph is acyclic (return to step 2 if not)
+
+        // Generate connection map
+        IDictionary<int, List<int>> adjacencyMap = new Dictionary<int, List<int>>();
+        foreach (ConnectionGene c in old.genes)
         {
-            // New connection
-            // 1) Generate connection map
-            // 2) Pick start (must be non-output)
-            // 3) Pick end (must be non-input)
-            // 4) Check that resultant graph is acyclic (return to step 2 if not)
+            if (c.disabled) continue;
 
-            // Generate connection map
-            IDictionary<int, List<int>> adjacencyMap = new Dictionary<int, List<int>>();
-            foreach (ConnectionGene c in old.genes)
+            if (!adjacencyMap.ContainsKey(c.fromNode))
+                adjacencyMap[c.fromNode] = new List<int>();
+            adjacencyMap[c.fromNode].Add(c.toNode);
+        }
+
+        // (defaults to all false)
+        bool[] visited = new bool[maxNode + 1];
+
+        int loops = 10;
+        // Loop until we find a valid pair    (maybe just try a few times then give up idk) this is ugly wtf
+        while (0 != loops--)
+        {
+            // Must be non-output
+            int start = Random.Range(0, maxNode + 1 - numOutputs);
+            if (start >= numInputs) start += numOutputs;
+            // shift (0 ... whatever) to (0 ... old.inputs-1) U (old.inputs + old.outputs ... maxnode)   i.e. not an output
+
+            // Must be non-input
+            int end = Random.Range(0, maxNode + 1 - numInputs);
+            end += numInputs;   // shift (0 ... whatever) to (inputs ... maxnode)   i.e. not an input
+
+            // Now, we must check
+            // 1) Does this edge already exist?           O(E)
+            // 2) Does adding this edge produce a cycle?  O(V + E)
+
+            // Check if the edge already exists, using the adjacencyMap
+            bool edgeExists = false;
+            if (adjacencyMap.ContainsKey(start))
             {
-                if (c.disabled) continue;
-
-                if (!adjacencyMap.ContainsKey(c.fromNode))
-                    adjacencyMap[c.fromNode] = new List<int>();
-                adjacencyMap[c.fromNode].Add(c.toNode);
-            }
-
-            // (defaults to all false)
-            bool[] visited = new bool[maxNode + 1];
-
-            int loops = 10;
-            // Loop until we find a valid pair    (maybe just try a few times then give up idk) this is ugly wtf
-            while (0 != loops--)
-            {
-                // Must be non-output
-                int start = Random.Range(0, maxNode + 1 - numOutputs);
-                if (start >= numInputs) start += numOutputs;
-                // shift (0 ... whatever) to (0 ... old.inputs-1) U (old.inputs + old.outputs ... maxnode)   i.e. not an output
-
-                // Must be non-input
-                int end = Random.Range(0, maxNode + 1 - numInputs);
-                end += numInputs;   // shift (0 ... whatever) to (inputs ... maxnode)   i.e. not an input
-
-                // Now, we must check
-                // 1) Does this edge already exist?           O(E)
-                // 2) Does adding this edge produce a cycle?  O(V + E)
-
-                // Check if the edge already exists, using the adjacencyMap
-                bool edgeExists = false;
-                if (adjacencyMap.ContainsKey(start))
+                foreach (int i in adjacencyMap[start])
                 {
-                    foreach (int i in adjacencyMap[start])
+                    // Damn, start -> end already exists
+                    if (i == end)
                     {
-                        // Damn, start -> end already exists
-                        if (i == end)
-                        {
-                            edgeExists = true;
-                            break;
-                        }
+                        edgeExists = true;
+                        break;
                     }
                 }
-                if (edgeExists) continue; // Start again with new start/end, as this edge already exists :(
+            }
+            if (edgeExists) continue; // Start again with new start/end, as this edge already exists :(
 
 
-                // Check for end->start path; if it exists, we cannot add the start->end edge.
-                if (CanReach(end, start, adjacencyMap, visited))
-                {
-                    // This is invalid, so we try again
-                    // Reset visited to all false
-                    System.Array.Clear(visited, 0, visited.Length);
-                }
-                else
-                {
-                    // Valid! make connection and escape loop
-                    float weight = Random.Range(-1.0f, 1.0f);
-                    ConnectionGene c = new ConnectionGene(globalInnovationNumber++, start, end, false, weight);
-                    old.genes.Add(c);
-                    break;
-                }
+            // Check for end->start path; if it exists, we cannot add the start->end edge.
+            if (CanReach(end, start, adjacencyMap, visited))
+            {
+                // This is invalid, so we try again
+                // Reset visited to all false
+                System.Array.Clear(visited, 0, visited.Length);
+            }
+            else
+            {
+                // Valid! make connection and escape loop
+                float weight = Random.Range(-1.0f, 1.0f);
+                ConnectionGene c = new ConnectionGene(globalInnovationNumber++, start, end, false, weight);
+                old.genes.Add(c);
+                break;
             }
         }
-        else
-        {
-            // Split edge
-            // 1) Pick random (and non-disabled) edge from connections
-            // 2) Disable it
-            // 3) Add new node
-            // 4) Add new connections
 
-            int index = Random.Range(0, old.genes.Count);
-            int _ = 5;
-            while (_-->0 && old.genes[index].disabled) index = Random.Range(0, old.genes.Count);
+    }
 
-            // old.genes[index].disabled = true;           // Doesn't work because structs are weird and possibly immutable
-            // old.genes[index] = old.genes[index].Disable();
+    // Directly modifies 'old'
+    // If my understanding is right, we never mutate and keep an old copy
+    static public void NewNodeMutate(Genome old)
+    {
+        if (old.genes.Count == 0) return;
 
-            // Get node IDs
-            int new_id = maxNode + 1;
-            int from_id = old.genes[index].fromNode;
-            int to_id = old.genes[index].toNode;
+        // Highest ID of any node in this genome
+        int maxNode = old.GetMaxNodeNumber();
 
-            float oldWeight = old.genes[index].weight;
+        // Split edge
+        // 1) Pick random (and non-disabled) edge from connections
+        // 2) Disable it
+        // 3) Add new node
+        // 4) Add new connections
 
-            // replace from->to with from->new->to
-            ConnectionGene c1 = new ConnectionGene(globalInnovationNumber++, from_id, new_id, false, oldWeight / 2);
-            ConnectionGene c2 = new ConnectionGene(globalInnovationNumber++, new_id, to_id, false, oldWeight / 2);
+        int index = Random.Range(0, old.genes.Count);
+        int _ = 5;
+        while (_-->0 && old.genes[index].disabled) index = Random.Range(0, old.genes.Count);
 
-            old.genes.Add(c1);
-            old.genes.Add(c2);
+        // old.genes[index].disabled = true;           // Doesn't work because structs are weird and possibly immutable
+        // old.genes[index] = old.genes[index].Disable();
 
-            old.genes.RemoveAt(index);
-        }
+        // Get node IDs
+        int new_id = maxNode + 1;
+        int from_id = old.genes[index].fromNode;
+        int to_id = old.genes[index].toNode;
+
+        float oldWeight = old.genes[index].weight;
+
+        // replace from->to with from->new->to
+        ConnectionGene c1 = new ConnectionGene(globalInnovationNumber++, from_id, new_id, false, oldWeight / 2);
+        ConnectionGene c2 = new ConnectionGene(globalInnovationNumber++, new_id, to_id, false, oldWeight / 2);
+
+        old.genes.Add(c1);
+        old.genes.Add(c2);
+
+        old.genes.RemoveAt(index);
     }
 
     public static void WeightMutate(Genome old)
     {
         for (int i=0; i<old.genes.Count; i++)
         {
-            // Mutate iff not disabled and random chance
-            if (!old.genes[i].disabled && Random.Range(0.0f, 1.0f) <= weightChangeChance)
+            if (Random.Range(0.0f, 1.0f) <= weightChangeChance)
             {
-                //old.genes[i].weight += Random.Range(-weightChangeRange, weightChangeRange); // This doesn't work because of struct
+                // Mutate iff not disabled and random chance
+                if (!old.genes[i].disabled)
+                {
+                    float newWeight;
+                    // UNIFORMLY PERTURB
+                    if (Random.Range(0.0f, 1.0f) < 0.9f)
+                    {
+                        newWeight = old.genes[i].weight * Random.Range(1.0f-weightChangeRange, 1.0f+weightChangeRange);
+                    }
+                    // Random new value
+                    else
+                    {
+                        newWeight = Random.Range(-1.0f, 1.0f);
 
-                // Modify weight and ... construct a new instance
-                float newWeight = old.genes[i].weight + Random.Range(-weightChangeRange, weightChangeRange);
-                old.genes[i] = new ConnectionGene(old.genes[i].innovationNumber, old.genes[i].fromNode, old.genes[i].toNode, old.genes[i].disabled, newWeight);
+                    }
+                    old.genes[i] = new ConnectionGene(old.genes[i].innovationNumber, old.genes[i].fromNode, old.genes[i].toNode, old.genes[i].disabled, newWeight);
+                }
             }
         }
     }
@@ -214,11 +228,10 @@ public class Genome
     // Structurally or weighturally mutate
     public static void Mutate(Genome old)
     {
-        float f = Random.Range(0, 1.0f);
-
-        if (f < 0.05f) StructuralMutate(old);    // 5%
-        else if (f < 0.2f) DisableMutate(old);   // 18%
-        else WeightMutate(old);                  // 80%
+        if (Random.Range(0, 1.0f) < 0.1f)  DisableMutate(old);    // 10%
+        if (Random.Range(0, 1.0f) < 0.01f) NewNodeMutate(old);    // 1%
+        if (Random.Range(0, 1.0f) < 0.1f)  NewEdgeMutate(old);    // 10%
+        if (Random.Range(0, 1.0f) < 0.8f)  WeightMutate(old);     // 80%
     }
 
     public DAGNet MakeNet()
@@ -308,8 +321,23 @@ public class Genome
     {
         int d = 0; foreach (ConnectionGene g in genes) d += g.disabled?1:0;
 
+        HashSet<int> usedNums = new HashSet<int>();
+        foreach (ConnectionGene g in genes) {
+            usedNums.Add(g.fromNode);
+            usedNums.Add(g.toNode);
+        }
+
+        int wasted = 0;
+        for (int k=numInputs + numOutputs; k<GetMaxNodeNumber(); k++)
+        {
+            if (!usedNums.Contains(k))
+                wasted++;
+        }
+
         return "Number of genes: " + genes.Count +
-               "\nOf which " + d + " are disabled";
+               "\nNumber of nodes: " + GetMaxNodeNumber() +
+               "\nWasted nodes: " + wasted +
+               "\nDisabled genes: " + d;
     }
 
     // Note: I believe this has to leave a and b unmodified, as they will be used for future crossovers

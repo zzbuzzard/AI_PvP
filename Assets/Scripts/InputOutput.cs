@@ -40,7 +40,8 @@ public static class InputOutput
     public const int numInputs = inputsGrid
                                + inputsMe
                                + inputsPerPlayer * numPlayers
-                               + inputsPerBullet * numBullets;
+                               + inputsPerBullet * numBullets
+                               + 1; // BONUS INPUT
     // Outputs:
     //  direction (2)
     //  is shooting (1)
@@ -186,6 +187,8 @@ public static class InputOutput
                 offset += inputsPerBullet;
             }
         }
+
+        inputArr[inputArr.Length - 1] = 1.0f;
 
         Debug.Assert(offset == inputsGrid + inputsMe + inputsPerPlayer * numPlayers + inputsPerBullet * numBullets, "Incorrect offset");
 

@@ -30,10 +30,10 @@ public class Neat : Genetic
             this.players.Add(player);
         }
 
-        public bool IsInSpecies(NeatPlayer q)
+        public bool IsInSpecies(NeatPlayer q, float threshold)
         {
             NeatPlayer p = players[UnityEngine.Random.Range(0, players.Count)];
-            return p.GetGenome().GetSimilarity(q.GetGenome()) <= similarityThreshold;
+            return p.GetGenome().GetSimilarity(q.GetGenome()) <= threshold;
         }
 
         public void Add(NeatPlayer p)
@@ -55,7 +55,8 @@ public class Neat : Genetic
 
     int generation = 0;
     const int addNewOn = 100;
-    const int maxNumEnemies = 1;
+    const int maxNumEnemies = 2;
+    int previousNumSpecies = 1;
 
     List<NeatPlayer> ais;
     int N;
@@ -91,13 +92,17 @@ public class Neat : Genetic
 
     private List<Species> GetSpecies(List<NeatPlayer> players)
     {
+        float threshold = similarityThreshold;
+        if (previousNumSpecies > goalNumSpecies) threshold += similarityVariation;
+        if (previousNumSpecies < goalNumSpecies) threshold -= similarityVariation;
+
         List<Species> species = new List<Species>();
         foreach(NeatPlayer player in players)
         {
             bool found_species = false;
             foreach(Species speshee in species)
             {
-                if (speshee.IsInSpecies(player))
+                if (speshee.IsInSpecies(player, threshold))
                 {
                     speshee.Add(player);
                     found_species = true;
@@ -120,30 +125,79 @@ public class Neat : Genetic
     private float maxFitness = 0.0f;
     private NeatPlayer fittest = null;
 
+    private void PruneAll()
+    {
+        if (maxFitness > 0.1f)
+        {
+            Debug.Log("Pruning all");
+            for (int i = 0; i < ais.Count; i++) ais[i] = RemoveExcess(ais[i]);
+        }
+        else Debug.Log("Too stupid to prune");
+    }
+
+    private NeatPlayer RemoveExcess(NeatPlayer p)
+    {
+        float fitness = p.fitness;
+        int removed = 0;
+
+        Genome g = p.GetGenome();
+
+        for (int i=g.genes.Count-1; i>=0; i--)
+        {
+            ConnectionGene c = g.genes[i];
+            g.genes.RemoveAt(i);
+
+            NeatPlayer p2 = new NeatPlayer(new NeatNet(g));
+
+            EvaluateFitness(p2);
+            if (p2.fitness < fitness)
+            {
+                g.genes.Add(c);
+            }
+            else
+            {
+                fitness = p2.fitness;
+                removed++;
+            }
+        }
+
+        NeatPlayer p3 = new NeatPlayer(new NeatNet(g));
+        EvaluateFitness(p3);
+
+        //Debug.Log("Removed " + removed + " genes");
+
+        return p3;
+    }
+
+    // Sets p.fitness
+    private bool usesPvp = false;
     private void EvaluateFitness(NeatPlayer p)
     {
         float trialWeight = 100.0f;
 
         p.fitness = 0.1f;
-
-        int gamesPlayed = 0;
-
-        foreach (GenericPlayer enemy in enemies)
+        
+        if (usesPvp)
         {
-            List<GenericPlayer> gs;
+            int gamesPlayed = 0;
 
-            gs = new List<GenericPlayer>() { p, enemy };
-            Game.SimulateGame(gs);
-            p.fitness += Genetic.GetScore1(p);
-            gamesPlayed++;
+            foreach (GenericPlayer enemy in enemies)
+            {
+                List<GenericPlayer> gs;
 
-            gs = new List<GenericPlayer>() { enemy, p };
-            Game.SimulateGame(gs);
-            p.fitness += Genetic.GetScore1(p);
-            gamesPlayed++;
+                gs = new List<GenericPlayer>() { p, enemy };
+                Game.SimulateGame(gs);
+                p.fitness += Genetic.GetScore1(p);
+                gamesPlayed++;
+
+                gs = new List<GenericPlayer>() { enemy, p };
+                Game.SimulateGame(gs);
+                p.fitness += Genetic.GetScore1(p);
+                gamesPlayed++;
+            }
+
+            p.fitness /= gamesPlayed;
         }
-
-        p.fitness /= gamesPlayed;
 
         foreach (Trial t in Trial.trials)
         {
@@ -182,9 +236,32 @@ public class Neat : Genetic
 
     private void PrintInfo(List<Species> species)
     {
+        float t = 0;
+
+        int[] species_counts = new int[species.Count];
+        float[] species_avg_fit = new float[species.Count];
+
+        for (int i = 0; i < species.Count; i++)
+        {
+            species_counts[i] = species[i].players.Count;
+            species_avg_fit[i] = 0;
+
+            foreach (NeatPlayer p in species[i].players)
+            {
+                t += p.fitness;
+                species_avg_fit[i] += p.fitness;
+            }
+            species_avg_fit[i] /= species[i].players.Count;
+        }
+
+        t /= ais.Count;
+
         Debug.Log("Number of species: " + species.Count + " and pop size is " + ais.Count +
-                  "\nFittest has fitness " + maxFitness +
-                  "\nStats: " + fittest.GetGenome().GenomeStats()
+                  "\nMax fitness: " + maxFitness +
+                  "\nStats: " + fittest.GetGenome().GenomeStats() +
+                  "\nAverage fitness: " + t +
+                  "\nSpecies sizes: " + Util.GetArrString(species_counts) +
+                  "\nSpecies fitns: " + Util.GetArrString(species_avg_fit)
             );
     }
 
@@ -197,7 +274,15 @@ public class Neat : Genetic
         List<Species> species = GetSpecies(ais);
         EvaluateAllFitness(species);
 
-        PrintInfo(species);
+        //if (generation % 150 == 0)
+        //{
+        //    PruneAll();
+        //}
+
+        if (generation % 10 == 0)
+        {
+            PrintInfo(species);
+        }
 
         float averageFitness = 0;
         foreach (Species s in species)
@@ -220,12 +305,21 @@ public class Neat : Genetic
         {
             Species speshee = species[spIndex];
 
+            // Prune the best r% before breeding
+            int max_index = (int)(speshee.players.Count * breedSpeciesPercent);
+            for (int i = 0; i < max_index; i++)
+            {
+                if (UnityEngine.Random.Range(0.0f, 1.0f) < pruneChance)
+                    speshee.players[i] = RemoveExcess(speshee.players[i]);
+            }
+
+
             float myfit = speshee.GetFitness();
             int size = (int)(myfit / averageFitness);
 
             // Last one: make sure we return to the normal population size
             if (spIndex == species.Count - 1)
-                size = N - ais.Count; 
+                size = N - ais.Count;
 
             for (int i = 0; i < size - 1; i++)
             {
@@ -243,14 +337,28 @@ public class Neat : Genetic
         }
 
         generation++;
+        previousNumSpecies = species.Count;
 
         if (generation % addNewOn == 0)
         {
             Debug.Log("Adding a new enemy! There are now " + enemies.Count + " enemies");
-            enemies.Add(fittest);
+            enemies.Add(RemoveExcess(fittest));
 
             if (enemies.Count > maxNumEnemies)
                 enemies.RemoveAt(0);
+        }
+
+
+        //if (generation == 500)
+        //{
+        //    Debug.Log("ENTERING WALL MODE");
+        //    foreach (Trial t in Trial.trials) ((TargetPractice)t).zeroMap = false;
+        //}
+
+        if (generation == 1000)
+        {
+            Debug.Log("ENTERING PVP MODE");
+            usesPvp = true;
         }
     }
 }
