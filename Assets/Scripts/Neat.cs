@@ -306,12 +306,12 @@ public class Neat : Genetic
             Species speshee = species[spIndex];
 
             // Prune the best r% before breeding
-            int max_index = (int)(speshee.players.Count * breedSpeciesPercent);
-            for (int i = 0; i < max_index; i++)
-            {
-                if (UnityEngine.Random.Range(0.0f, 1.0f) < pruneChance)
-                    speshee.players[i] = RemoveExcess(speshee.players[i]);
-            }
+            //int max_index = (int)(speshee.players.Count * breedSpeciesPercent);
+            //for (int i = 0; i < max_index; i++)
+            //{
+            //    if (UnityEngine.Random.Range(0.0f, 1.0f) < pruneChance)
+            //        speshee.players[i] = RemoveExcess(speshee.players[i]);
+            //}
 
 
             float myfit = speshee.GetFitness();
@@ -327,6 +327,7 @@ public class Neat : Genetic
                 int b = (int)(speshee.players.Count * UnityEngine.Random.Range(0.0f, breedSpeciesPercent));
                 Genome genom = Genome.Crossover(speshee.players[a].GetGenome(), speshee.players[b].GetGenome());
 
+                for (int asdagsdjknfaw=0; asdagsdjknfaw<4; asdagsdjknfaw++)
                 Genome.Mutate(genom);
 
                 ais.Add(new NeatPlayer(new NeatNet(genom)));
