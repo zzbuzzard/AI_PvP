@@ -6,7 +6,8 @@ using UnityEngine;
 // A trial modifies the Game every step before input is given
 public abstract class Trial
 {
-    public static readonly Trial[] trials = new Trial[] { new TargetPractice(0), new TargetPractice(1), new TargetPractice(7) };
+    //public static readonly Trial[] trials = new Trial[] { new TargetPractice(0), new TargetPractice(1), new TargetPractice(7) };
+    public static readonly Trial[] trials = new Trial[] { };
 
     protected System.Random r;
 

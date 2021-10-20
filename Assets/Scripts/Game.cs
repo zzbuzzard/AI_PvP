@@ -112,7 +112,18 @@ public class Game
                 map[x, y] = MapBlock.EMPTY;
             }
         }
-
+        int platformlevel = 4;
+        int platformlevel2 = 6;
+        int[] platformnums = { 1, 2, 3, 4, 18, 17, 16, 15 };
+        int[] platformnums2 = { 8, 9, 10, 11 };
+        foreach(int num in platformnums)
+        {
+            map[num, platformlevel] = MapBlock.WALL;
+        }
+        foreach (int num in platformnums2)
+        {
+            map[num, platformlevel2] = MapBlock.WALL;
+        }
         // map size 80
         // 4 players
         // 10, 30, 50, 70

@@ -124,14 +124,15 @@ public class Neat : Genetic
     {
         float trialWeight = 100.0f;
 
-        p.fitness = 0.1f;
+        p.fitness = 0.0f;
 
         int gamesPlayed = 0;
-
-        foreach (GenericPlayer enemy in enemies)
+        int games = 10;
+        //foreach (GenericPlayer enemy in enemies)
+        for(int _ = 0; _ < games; _++)
         {
             List<GenericPlayer> gs;
-
+            GenericPlayer enemy = ais[UnityEngine.Random.Range(0, ais.Count)];
             gs = new List<GenericPlayer>() { p, enemy };
             Game.SimulateGame(gs);
             p.fitness += Genetic.GetScore1(p);
@@ -192,12 +193,18 @@ public class Neat : Genetic
     // Evaluate fitness of everyone
     // Work out population size
     // Create new populations by breeding
+    int increments = 0;
     public override void Increment()
     {
+        
         List<Species> species = GetSpecies(ais);
-        EvaluateAllFitness(species);
 
-        PrintInfo(species);
+        EvaluateAllFitness(species);
+        increments++;
+        if(increments == 100) { 
+            PrintInfo(species);
+            increments = 0;
+        }
 
         float averageFitness = 0;
         foreach (Species s in species)
