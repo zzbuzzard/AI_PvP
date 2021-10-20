@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class HumanPlayer : GenericPlayer
 {
-    public override GameInput GetInput(Game game)
+    public override GameInput GetInput(ShooterGame game)
     {
         sbyte h = 0;
         bool jump = false;

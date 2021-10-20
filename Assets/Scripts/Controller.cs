@@ -49,7 +49,7 @@ public class Controller : MonoBehaviour
         qs.Add(ps[0]);
         qs.Add(ps[1]);
 
-        d.Simulate(new Game(qs));
+        d.Simulate(new ShooterGame(qs));
     }
 
     public void ShowTrialN(int n)
@@ -78,7 +78,7 @@ public class Controller : MonoBehaviour
 
         qs.Add(new HumanPlayer());
 
-        d.Simulate(new Game(qs), true);
+        d.Simulate(new ShooterGame(qs), true);
     }
 
     public void StopGame()

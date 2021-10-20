@@ -28,7 +28,7 @@ public abstract class Genetic
                          p.shotsHit * 50                        // 50 points per hit
                        + lifeProp * lifeProp * 20               // 20 bonus points for max life
                        + endBonus                               // 100 bonus points for a win
-                       + p.frameOfDeath * Game.spf / 2.0f       // 0.5 points per second
+                       + p.frameOfDeath * ShooterGame.spf / 2.0f       // 0.5 points per second
                        + p.shotsFired / 5.0f
                        // TODO: Force them to move left/right
                        );
@@ -44,6 +44,6 @@ public abstract class Genetic
         return Mathf.Max(fitness, 0.0f);
 
         //             + p.life                               // 3 points for a perfect run, 2 for one hit, 1 for two hits
-        //             + p.frameOfDeath * Game.spf / 20.0f    // number of seconds alive;  one minute is 3 points
+        //             + p.frameOfDeath * ShooterGame.spf / 20.0f    // number of seconds alive;  one minute is 3 points
     }
 }

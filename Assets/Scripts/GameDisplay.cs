@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GameDisplay : MonoBehaviour
 {
-    Game g;
+    ShooterGame g;
     List<GenericPlayer> players;
     List<GameObject> playerObjs;
     List<GameObject> bulletObjs;
@@ -16,7 +16,7 @@ public class GameDisplay : MonoBehaviour
 
     public bool gameInProgress = false;
 
-    public void Simulate(Game g, bool timeless = false)
+    public void Simulate(ShooterGame g, bool timeless = false)
     {
         // Clean up previous simulation
         foreach (GameObject x in playerObjs) Destroy(x);
@@ -35,9 +35,9 @@ public class GameDisplay : MonoBehaviour
             MakePlayer(p);
 
         this.g = g;
-        for (int x = 0; x < Game.xsize; x++)
+        for (int x = 0; x < ShooterGame.xsize; x++)
         {
-            for (int y = 0; y < Game.ysize; y++)
+            for (int y = 0; y < ShooterGame.ysize; y++)
             {
                 if (g.GetTile(x, y) == MapBlock.WALL)
                 {
@@ -54,7 +54,7 @@ public class GameDisplay : MonoBehaviour
 
     private void Start()
     {
-        Camera.main.orthographicSize = Game.xsize / 3.0f;
+        Camera.main.orthographicSize = ShooterGame.xsize / 3.0f;
 
         playerObjs = new List<GameObject>();
         bulletObjs = new List<GameObject>();
@@ -110,10 +110,10 @@ public class GameDisplay : MonoBehaviour
         playerObjs.Add(mPref);
     }
 
-    // Game coords to world coords
+    // ShooterGame coords to world coords
     public static Vector2 Translate(Vector2 pos)
     {
-        Vector2 centre = new Vector2(Game.xsize / 2, Game.ysize / 2);
+        Vector2 centre = new Vector2(ShooterGame.xsize / 2, ShooterGame.ysize / 2);
         return pos - centre;
     }
 

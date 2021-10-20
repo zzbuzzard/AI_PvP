@@ -43,7 +43,7 @@ public class Bullet
     }
 }
 
-public class Game
+public class ShooterGame
 {
     public const float spf = 1 / 30.0f; // Seconds per frame
     const float gravity = 5.0f;
@@ -76,14 +76,14 @@ public class Game
 
     public static float Trial(GenericPlayer p, Trial t)
     {
-        Game g = t.CreateTrial(p);
+        ShooterGame g = t.CreateTrial(p);
         while (!g.Step()) { }
         return t.GetScore(g);
     }
 
     public static void SimulateGame(List<GenericPlayer> p)
     {
-        Game g = new Game(p);
+        ShooterGame g = new ShooterGame(p);
         while (!g.Step()) { }
     }
 
@@ -98,7 +98,7 @@ public class Game
         return map[x, y];
     }
 
-    public Game(List<GenericPlayer> players)
+    public ShooterGame(List<GenericPlayer> players)
     {
         framesPassed = 0;
 
@@ -153,7 +153,7 @@ public class Game
         //map[xsize / 2, 4] = MapBlock.WALL;
     }
 
-    public Game(List<GenericPlayer> p, Trial t) : this(p)
+    public ShooterGame(List<GenericPlayer> p, Trial t) : this(p)
     {
         trial = t;
     }
@@ -443,5 +443,5 @@ public class Game
 }
 
 
-// Game has a number of Players
+// ShooterGame has a number of Players
 // Player implements Move()

@@ -87,7 +87,7 @@ public class RankedGenetic : Genetic
             }
 
             // TODO: Shuffle? but then issues in next loop
-            Game.SimulateGame(roundPlayers);
+            ShooterGame.SimulateGame(roundPlayers);
 
             // Min score is the one with the largest index
             float minScore = ais[(i + 1) * FFA_size - 1].score;

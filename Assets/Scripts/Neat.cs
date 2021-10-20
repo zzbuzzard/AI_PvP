@@ -186,12 +186,12 @@ public class Neat : Genetic
                 List<GenericPlayer> gs;
 
                 gs = new List<GenericPlayer>() { p, enemy };
-                Game.SimulateGame(gs);
+                ShooterGame.SimulateGame(gs);
                 p.fitness += Genetic.GetScore1(p);
                 gamesPlayed++;
 
                 gs = new List<GenericPlayer>() { enemy, p };
-                Game.SimulateGame(gs);
+                ShooterGame.SimulateGame(gs);
                 p.fitness += Genetic.GetScore1(p);
                 gamesPlayed++;
             }
@@ -201,7 +201,7 @@ public class Neat : Genetic
 
         foreach (Trial t in Trial.trials)
         {
-            p.fitness += trialWeight * Game.Trial(p, t);
+            p.fitness += trialWeight * ShooterGame.Trial(p, t);
         }
 
         // If it's actually any good, prioritise less complex species

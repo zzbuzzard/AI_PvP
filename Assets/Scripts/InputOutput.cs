@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// Takes a Game object and produces a list of input floats
+// Takes a ShooterGame object and produces a list of input floats
 public static class InputOutput
 {
     // Inputs:
@@ -52,7 +52,7 @@ public static class InputOutput
     private static float[] inputArr = new float[numInputs];
     private static float[] outputArr = new float[numOutputs];
 
-    private static void SetGrid(int index, GenericPlayer p, Game game)
+    private static void SetGrid(int index, GenericPlayer p, ShooterGame game)
     {
         int xpos = (int)p.x;
         int ypos = (int)p.y;
@@ -67,10 +67,10 @@ public static class InputOutput
         }
     }
 
-    private static void SetMyPlayer(int index, GenericPlayer p, Game game)
+    private static void SetMyPlayer(int index, GenericPlayer p, ShooterGame game)
     {
-        inputArr[index]     = p.x / Game.xsize;
-        inputArr[index + 1] = p.y / Game.ysize;          // Position
+        inputArr[index]     = p.x / ShooterGame.xsize;
+        inputArr[index + 1] = p.y / ShooterGame.ysize;          // Position
         inputArr[index + 2] = p.life / (float)GenericPlayer.maxlife;   // My life
         inputArr[index + 3] = p.vx;
         inputArr[index + 4] = p.vy;                       // Velocity
@@ -78,7 +78,7 @@ public static class InputOutput
         inputArr[index + 6] = p.jumpLast ? 1.0f : 0.0f;   // Was jump held last time? TODO: Add memory and remove
     }
 
-    private static void SetPlayer(int index, GenericPlayer p, Game game, GenericPlayer q)
+    private static void SetPlayer(int index, GenericPlayer p, ShooterGame game, GenericPlayer q)
     {
         if (q != null)
         {
@@ -86,12 +86,12 @@ public static class InputOutput
             float dy = q.y - p.y;
             float dist = Mathf.Sqrt(dx * dx + dy * dy);
 
-            inputArr[index] = q.x / Game.xsize;
-            inputArr[index + 1] = q.y / Game.ysize;          // Position
+            inputArr[index] = q.x / ShooterGame.xsize;
+            inputArr[index + 1] = q.y / ShooterGame.ysize;          // Position
             inputArr[index + 2] = q.life / (float)GenericPlayer.maxlife;   // Health
             inputArr[index + 3] = dx / dist;
             inputArr[index + 4] = dy / dist;                 // dx, dy
-            inputArr[index + 5] = dist / Game.xsize;         // dist
+            inputArr[index + 5] = dist / ShooterGame.xsize;         // dist
             inputArr[index + 6] = q.vx;
             inputArr[index + 7] = q.vy;                      // velocity
         }
@@ -103,7 +103,7 @@ public static class InputOutput
         }
     }
 
-    private static void SetBullet(int index, GenericPlayer p, Game game, Bullet b)
+    private static void SetBullet(int index, GenericPlayer p, ShooterGame game, Bullet b)
     {
         if (b != null)
         {
@@ -111,11 +111,11 @@ public static class InputOutput
             float dy = b.y - p.y;
             float dist = Mathf.Sqrt(dx * dx + dy * dy);
 
-            inputArr[index]     = b.x / Game.xsize;
-            inputArr[index + 1] = b.y / Game.ysize;          // Position
+            inputArr[index]     = b.x / ShooterGame.xsize;
+            inputArr[index + 1] = b.y / ShooterGame.ysize;          // Position
             inputArr[index + 2] = dx / dist;
             inputArr[index + 3] = dy / dist;                 // dx, dy
-            inputArr[index + 4] = dist / Game.xsize;         // dist
+            inputArr[index + 4] = dist / ShooterGame.xsize;         // dist
             inputArr[index + 5] = b.vx;
             inputArr[index + 6] = b.vy;                      // velocity
         }
@@ -127,7 +127,7 @@ public static class InputOutput
     }
 
     // Gets a float[]
-    public static float[] GetInput(GenericPlayer p, Game game)
+    public static float[] GetInput(GenericPlayer p, ShooterGame game)
     {
         // Zero inputs
         // TODO: This is acc over the top a bit, we set most directly

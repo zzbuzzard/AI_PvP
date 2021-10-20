@@ -64,5 +64,5 @@ public abstract class GenericPlayer
         diedBefore = 0;
     }
 
-    public abstract GameInput GetInput(Game game);
+    public abstract GameInput GetInput(ShooterGame game);
 }

@@ -26,7 +26,7 @@ public class AIPlayer : GenericPlayer
         mnet = brain;
     }
 
-    public override GameInput GetInput(Game game)
+    public override GameInput GetInput(ShooterGame game)
     {
         if (game.framesPassed % whichFrameInput != 0)
             return prevInput;
