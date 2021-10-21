@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 // A trial modifies the Game every step before input is given
 public abstract class Trial
@@ -10,20 +9,20 @@ public abstract class Trial
 
     protected System.Random r;
 
-    protected static void ZeroGame(Game g)
+    protected static void ZeroGame(ShootGame g)
     {
-        for (int x = 0; x < Game.xsize; x++)
+        for (int x = 0; x < ShootGame.xsize; x++)
         {
-            for (int y = 1; y < Game.ysize; y++)
+            for (int y = 1; y < ShootGame.ysize; y++)
             {
                 g.SetTile(x, y, MapBlock.EMPTY);
             }
         }
     }
 
-    public abstract Game CreateTrial(GenericPlayer p);  // Note: trials are one player (but could change)
-    public abstract bool Apply(Game g);                 // Modify the Game object, return true iff trial over
-    public abstract float GetScore(Game g);             // Get the score of the player in the trial
+    public abstract ShootGame CreateTrial(GenericPlayer p);  // Note: trials are one player (but could change)
+    public abstract bool Apply(ShootGame g);                 // Modify the Game object, return true iff trial over
+    public abstract float GetScore(ShootGame g);             // Get the score of the player in the trial
 }
 
 public class TargetPractice : Trial
@@ -38,7 +37,8 @@ public class TargetPractice : Trial
 
     class TargetPlayer : GenericPlayer
     {
-       public override GameInput GetInput(Game game) { return GameInput.nothing; }
+        private static float[] nothing = new float[Constants.numOutputs];
+       public override float[] GetOutput(Game game, float[] input) { return nothing; }
     }
 
     public TargetPractice(int seed, bool zeroMap)
@@ -51,40 +51,40 @@ public class TargetPractice : Trial
     private void MovePosition()
     {
         float xmin = 1.0f,
-              xmax = Game.xsize - 1,
+              xmax = ShootGame.xsize - 1,
               ymin = 1.0f,
-              ymax = Game.ysize - 1;
+              ymax = ShootGame.ysize - 1;
 
-        ymax *= Mathf.Min(1.0f, (hits + 1) / 12.0f); 
+        ymax *= Math.Min(1.0f, (hits + 1) / 12.0f); 
 
         x = (float)r.NextDouble() * (xmax - xmin) + xmin;
         y = (float)r.NextDouble() * (ymax - ymin) + ymin;
     }
 
-    public override bool Apply(Game g)
+    public override bool Apply(ShootGame g)
     {
-        if (g.players[1].life != GenericPlayer.maxlife)
+        if (g.info[1].life != ShootGame.PlayerInfo.maxlife)
         {
-            float time = g.framesPassed * Game.spf;
+            float time = g.framesPassed * ShootGame.spf;
             totWaitTime += 1.0f / (time - lastHitTime + 1.0f); 
             lastHitTime = time;
 
-            hits += GenericPlayer.maxlife - g.players[1].life;
+            hits += ShootGame.PlayerInfo.maxlife - g.info[1].life;
 
             MovePosition();
 
-            g.players[1].life = GenericPlayer.maxlife;
+            g.info[1].life = ShootGame.PlayerInfo.maxlife;
         }
 
-        g.players[1].vx = 0.0f;
-        g.players[1].vy = 0.0f;
-        g.players[1].x = x;
-        g.players[1].y = y;
+        g.info[1].vx = 0.0f;
+        g.info[1].vy = 0.0f;
+        g.info[1].x = x;
+        g.info[1].y = y;
 
-        return g.framesPassed * Game.spf > trialTime;
+        return g.framesPassed * ShootGame.spf > trialTime;
     }
 
-    public override Game CreateTrial(GenericPlayer p)
+    public override ShootGame CreateTrial(GenericPlayer p)
     {
         r = new System.Random(seed);
         hits = 0;
@@ -92,26 +92,28 @@ public class TargetPractice : Trial
         lastHitTime = 0.0f;
 
         TargetPlayer t = new TargetPlayer();
-        Game g = new Game(new List<GenericPlayer>() { p, t }, this);
+        ShootGame g = new ShootGame(new GenericPlayer[] { p, t }, this);
+
+        // We are index 0
 
         if (zeroMap)
             ZeroGame(g);
 
         // Spawn the player randomly!
         MovePosition();
-        p.x = x;
-        p.y = y;
+        g.info[0].x = x;
+        g.info[1].y = y;
 
         MovePosition();
 
         return g;
     }
 
-    public override float GetScore(Game g)
+    public override float GetScore(ShootGame g)
     {
         // Note: totFrames used to be g.framesPassed but this encouraged the AI to kill themselves as soon as they could
 
-        float maxHits = trialTime / Game.reloadTime;
+        float maxHits = trialTime / ShootGame.reloadTime;
 
         return hits / maxHits + totWaitTime / 100.0f;
     }

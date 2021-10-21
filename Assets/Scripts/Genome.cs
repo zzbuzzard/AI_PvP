@@ -1,6 +1,6 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using static Constants;
 
 
@@ -103,12 +103,12 @@ public class Genome
         while (0 != loops--)
         {
             // Must be non-output
-            int start = Random.Range(0, maxNode + 1 - numOutputs);
+            int start = RandInt(0, maxNode + 1 - numOutputs);
             if (start >= numInputs) start += numOutputs;
             // shift (0 ... whatever) to (0 ... old.inputs-1) U (old.inputs + old.outputs ... maxnode)   i.e. not an output
 
             // Must be non-input
-            int end = Random.Range(0, maxNode + 1 - numInputs);
+            int end = RandInt(0, maxNode + 1 - numInputs);
             end += numInputs;   // shift (0 ... whatever) to (inputs ... maxnode)   i.e. not an input
 
             // Now, we must check
@@ -142,7 +142,7 @@ public class Genome
             else
             {
                 // Valid! make connection and escape loop
-                float weight = Random.Range(-1.0f, 1.0f);
+                float weight = Rand(-1.0f, 1.0f);
                 ConnectionGene c = new ConnectionGene(globalInnovationNumber++, start, end, false, weight);
                 old.genes.Add(c);
                 break;
@@ -166,9 +166,9 @@ public class Genome
         // 3) Add new node
         // 4) Add new connections
 
-        int index = Random.Range(0, old.genes.Count);
+        int index = RandInt(0, old.genes.Count);
         int _ = 5;
-        while (_-->0 && old.genes[index].disabled) index = Random.Range(0, old.genes.Count);
+        while (_-->0 && old.genes[index].disabled) index = RandInt(0, old.genes.Count);
 
         // old.genes[index].disabled = true;           // Doesn't work because structs are weird and possibly immutable
         // old.genes[index] = old.genes[index].Disable();
@@ -194,21 +194,21 @@ public class Genome
     {
         for (int i=0; i<old.genes.Count; i++)
         {
-            if (Random.Range(0.0f, 1.0f) <= weightChangeChance)
+            if (Rand(0.0f, 1.0f) <= weightChangeChance)
             {
                 // Mutate iff not disabled and random chance
                 if (!old.genes[i].disabled)
                 {
                     float newWeight;
                     // UNIFORMLY PERTURB
-                    if (Random.Range(0.0f, 1.0f) < 0.9f)
+                    if (Rand(0.0f, 1.0f) < 0.9f)
                     {
-                        newWeight = old.genes[i].weight * Random.Range(1.0f-weightChangeRange, 1.0f+weightChangeRange);
+                        newWeight = old.genes[i].weight * Rand(1.0f-weightChangeRange, 1.0f+weightChangeRange);
                     }
                     // Random new value
                     else
                     {
-                        newWeight = Random.Range(-1.0f, 1.0f);
+                        newWeight = Rand(-1.0f, 1.0f);
 
                     }
                     old.genes[i] = new ConnectionGene(old.genes[i].innovationNumber, old.genes[i].fromNode, old.genes[i].toNode, old.genes[i].disabled, newWeight);
@@ -220,7 +220,7 @@ public class Genome
     public static void DisableMutate(Genome old)
     {
         if (old.genes.Count == 0) return;
-        int i = Random.Range(0, old.genes.Count);
+        int i = RandInt(0, old.genes.Count);
         old.genes.RemoveAt(i);
 //        old.genes[i] = old.genes[i].DiEnsable();
     }
@@ -228,10 +228,10 @@ public class Genome
     // Structurally or weighturally mutate
     public static void Mutate(Genome old)
     {
-        if (Random.Range(0, 1.0f) < 0.1f)  DisableMutate(old);    // 10%
-        if (Random.Range(0, 1.0f) < 0.01f) NewNodeMutate(old);    // 1%
-        if (Random.Range(0, 1.0f) < 0.1f)  NewEdgeMutate(old);    // 10%
-        if (Random.Range(0, 1.0f) < 0.8f)  WeightMutate(old);     // 80%
+        if (Rand(0, 1.0f) < 0.1f)  DisableMutate(old);    // 10%
+        if (Rand(0, 1.0f) < 0.01f) NewNodeMutate(old);    // 1%
+        if (Rand(0, 1.0f) < 0.1f)  NewEdgeMutate(old);    // 10%
+        if (Rand(0, 1.0f) < 0.8f)  WeightMutate(old);     // 80%
     }
 
     public DAGNet MakeNet()
@@ -278,7 +278,7 @@ public class Genome
 
         float delta = 0;
 
-        int maxGenes = Mathf.Max(ourGenes.Count, otherGenes.Count);
+        int maxGenes = Math.Max(ourGenes.Count, otherGenes.Count);
         if(maxGenes == 0) // Nobody has any genes; just return 0
             return 0.0f;
 
@@ -291,7 +291,7 @@ public class Genome
             // Shared gene
             if (ourGenes.ContainsKey(inum) && otherGenes.ContainsKey(inum))
             {
-                weightDifferences += weightCoeff * Mathf.Abs(ourGenes[inum].weight - otherGenes[inum].weight);
+                weightDifferences += weightCoeff * Math.Abs(ourGenes[inum].weight - otherGenes[inum].weight);
                 matchingGenes++;
             }
             // Disjoint/Excess
@@ -363,7 +363,7 @@ public class Genome
         IDictionary<int, ConnectionGene> dominantParent;
         if (a.fitness > b.fitness)      dominantParent = aGenes;
         else if (b.fitness > a.fitness) dominantParent = bGenes;
-        else                            dominantParent = (Random.Range(0.0f, 1.0f) > 0.5f ? aGenes : bGenes);
+        else                            dominantParent = (Rand(0.0f, 1.0f) > 0.5f ? aGenes : bGenes);
         
         List<ConnectionGene> newGenes = new List<ConnectionGene>();
         foreach (int inum in innovationNumbers)

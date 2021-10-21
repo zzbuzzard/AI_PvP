@@ -1,6 +1,6 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using static Constants;
 
 // Class for a non-layered neural network
@@ -61,12 +61,6 @@ public class DAGNet
             TopoSort(i, ref vis);
         }
         topoSort.Reverse();
-
-        // TODO: Remove check
-        if (topoSort.Count > N)
-        {
-            Debug.LogError("Topological sort is too large!");
-        }
     }
 
     private void TopoSort(int n, ref bool[] visited)
@@ -87,7 +81,7 @@ public class DAGNet
     {
         if (inputs.Length != numInputs)
         {
-            Debug.LogError("Input array provided had size " + inputs.Length + ", expected " + numInputs);
+            Console.WriteLine("ERROR: Input array provided had size " + inputs.Length + ", expected " + numInputs);
             return null;
         }
 
@@ -129,7 +123,7 @@ public class DAGNet
         return "x" + i;
     }
 
-    public void Print()
+    public override string ToString()
     {
         string s = "Number of nodes: " + N + "\n";
         for (int i=0; i<N; i++)
@@ -141,8 +135,7 @@ public class DAGNet
             }
             s += "\n";
         }
-
-        Debug.Log(s);
+        return s;
     }
 }
 

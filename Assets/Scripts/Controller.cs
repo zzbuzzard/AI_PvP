@@ -11,6 +11,9 @@ public class Controller : MonoBehaviour
     Genetic population;
     private Thread _t1;
 
+    int generation = 0;
+    bool threadRunning = false;
+
     void Start()
     {
         List<NeatPlayer> pop = new List<NeatPlayer>();
@@ -23,33 +26,56 @@ public class Controller : MonoBehaviour
 
         population = new Neat(pop);
         //_t1 = new Thread(_Update);
+
+        _t1 = new Thread(() =>
+        {
+            Thread.CurrentThread.Priority = System.Threading.ThreadPriority.Highest;
+            while (true)
+            {
+                if (!d.gameInProgress)
+                {
+                    threadRunning = true;
+                    population.Increment();
+                    generation++;
+                }
+                else
+                {
+                    threadRunning = false;
+                }
+            }
+        });
+
+        _t1.Start();
     }
 
-    int generation = 0;
     void Update()
     {
+        genText.text = "Generation " + generation;
         //while (true)
         //{
-            if (!d.gameInProgress)
-            {
-                population.Increment();
-                generation++;
-                genText.text = "Generation " + generation;
-            }
+        //if (!d.gameInProgress)
+        //{
+        //    population.Increment();
+        //    generation++;
+        //    genText.text = "Generation " + generation;
         //}
+        //}
+    }
+
+    private void WaitThread()
+    {
+        while (threadRunning) ;
     }
 
     public void ShowGame()
     {
         if (d.gameInProgress) StopGame();
 
-        List<GenericPlayer> ps = population.GetPopulation();
-        List<GenericPlayer> qs = new List<GenericPlayer>();
+        GenericPlayer[] ps = population.GetPopulation();
+        GenericPlayer[] qs = new GenericPlayer[2] { ps[0], ps[1] };
 
-        qs.Add(ps[0]);
-        qs.Add(ps[1]);
-
-        d.Simulate(new Game(qs));
+        d.Simulate(new ShootGame(qs));
+        WaitThread();
     }
 
     public void ShowTrialN(int n)
@@ -61,9 +87,10 @@ public class Controller : MonoBehaviour
     {
         if (d.gameInProgress) StopGame();
 
-        List<GenericPlayer> ps = population.GetPopulation();
+        GenericPlayer[] ps = population.GetPopulation();
         
         d.Simulate(t.CreateTrial(ps[0]));
+        WaitThread();
     }
 
 
@@ -71,14 +98,11 @@ public class Controller : MonoBehaviour
     {
         if (d.gameInProgress) StopGame();
 
-        List<GenericPlayer> ps = population.GetPopulation();
-        List<GenericPlayer> qs = new List<GenericPlayer>();
-        for (int i = 0; i < 1; i++)
-            qs.Add(ps[i]);
+        GenericPlayer[] ps = population.GetPopulation();
+        GenericPlayer[] qs = new GenericPlayer[2] { ps[0], new HumanPlayer() };
 
-        qs.Add(new HumanPlayer());
-
-        d.Simulate(new Game(qs), true);
+        d.Simulate(new ShootGame(qs), true);
+        WaitThread();
     }
 
     public void StopGame()

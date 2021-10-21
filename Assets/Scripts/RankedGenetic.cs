@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 // There is a fixed number of points in total
 // For a population of size N, there are 10N points in total.
@@ -49,13 +48,13 @@ public class RankedGenetic : Genetic
         }
     }
 
-    public override List<GenericPlayer> GetPopulation()
+    public override GenericPlayer[] GetPopulation()
     {
-        List<GenericPlayer> players = new List<GenericPlayer>();
+        GenericPlayer[] players = new GenericPlayer[ais.Count];
 
         for (int i=0; i<N; i++)
         {
-            players.Add(ais[i].player);
+            players[i] = ais[i].player;
         }
 
         return players;
@@ -69,12 +68,11 @@ public class RankedGenetic : Genetic
     public override void Increment()
     {
         //Debug.Log("YOU NOBHEAD");
-        List<GenericPlayer> roundPlayers = new List<GenericPlayer>();
+        GenericPlayer[] roundPlayers = new GenericPlayer[FFA_size];
         List<Pair<float, int>> scores = new List<Pair<float, int>>();
 
         for (int j = 0; j < FFA_size; j++)
         {
-            roundPlayers.Add(null);
             scores.Add(new Pair<float, int>(0.0f, 0));
         }
 
@@ -86,15 +84,15 @@ public class RankedGenetic : Genetic
                 roundPlayers[j] = ais[i * FFA_size + j].player;
             }
 
-            // TODO: Shuffle? but then issues in next loop
-            Game.SimulateGame(roundPlayers);
+            Game g = Constants.GameConstructor(roundPlayers);
+            g.SimulateGame();
 
             // Min score is the one with the largest index
             float minScore = ais[(i + 1) * FFA_size - 1].score;
 
             for (int j=0; j < FFA_size; j++)
             {
-                scores[j].fst = Genetic.GetScore1(roundPlayers[j]);
+                scores[j].fst = g.GetScore(j);
                 scores[j].snd = j;
             }
             scores.Sort();

@@ -1,8 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using static InputOutput;
+using static Constants;
 
 // An abstract class for AI players
 public class AIPlayer : GenericPlayer
@@ -11,7 +10,7 @@ public class AIPlayer : GenericPlayer
     const int whichFrameInput = 4;
 
     protected NeuralNet mnet;
-    GameInput prevInput = new GameInput(0, false, false, 0.0f);
+    float[] prevInput = new float[numOutputs];
 
     public static AIPlayer MakeLayeredAIPlayer()
     {
@@ -26,19 +25,14 @@ public class AIPlayer : GenericPlayer
         mnet = brain;
     }
 
-    public override GameInput GetInput(Game game)
+    public override float[] GetOutput(Game g, float[] input)
     {
-        if (game.framesPassed % whichFrameInput != 0)
+        if (g.framesPassed % whichFrameInput != 0)
             return prevInput;
 
-        float[] inputArr = InputOutput.GetInput(this, game);
-        float[] outputArr = mnet.Evaluate(inputArr);
-
-        GameInput g = InputOutput.GetOutput(outputArr);
-        prevInput = g;
-        return g;
+        prevInput = mnet.Evaluate(input);
+        return prevInput;
     }
-
 
     public AIPlayer BreedPlayer(AIPlayer otherParent)
     {
