@@ -10,7 +10,7 @@ public static class Constants
 
     // To change the game type
     //  1) Change the 6 lines of code below
-    //  2) Change HumanPlayer to do input properly
+    //  2) Change HumanPlayer.hs to do input for this game
     public static Game GameConstructor(GenericPlayer[] s)
     {
         return new ShootGame(s);

@@ -6,9 +6,6 @@ using static Constants;
 // An abstract class for AI players
 public class AIPlayer : GenericPlayer
 {
-    // Input every 4 frames (that is, 7 times a sec)
-    const int whichFrameInput = 4;
-
     protected NeuralNet mnet;
     float[] prevInput = new float[numOutputs];
 
@@ -27,11 +24,7 @@ public class AIPlayer : GenericPlayer
 
     public override float[] GetOutput(Game g, float[] input)
     {
-        if (g.framesPassed % whichFrameInput != 0)
-            return prevInput;
-
-        prevInput = mnet.Evaluate(input);
-        return prevInput;
+        return mnet.Evaluate(input);
     }
 
     public AIPlayer BreedPlayer(AIPlayer otherParent)

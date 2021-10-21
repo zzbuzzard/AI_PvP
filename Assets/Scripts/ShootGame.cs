@@ -271,6 +271,8 @@ public class ShootGame : Game
         trial = t;
     }
 
+    private const int inputFrame = 4;
+
     // Returns true iff the game has ended
     public override bool Step()
     {
@@ -352,9 +354,14 @@ public class ShootGame : Game
 
         // Get all players' inputs.
         // It's important this happens before any movement takes place, so that the order of the loop is irrelevant
-        for (int i=0; i<info.Length; i++) {
-            if (info[i].life <= 0) continue; // Ignore the dead
-            inputs[i] = GetOutput(players[i].GetOutput(this, GetInput(i))); // This is where the magic happens
+
+        if (framesPassed % inputFrame == 0)
+        {
+            for (int i = 0; i < info.Length; i++)
+            {
+                if (info[i].life <= 0) continue; // Ignore the dead
+                inputs[i] = GetOutput(players[i].GetOutput(this, GetInput(i))); // This is where the magic happens
+            }
         }
 
         // Move players, collide with walls
