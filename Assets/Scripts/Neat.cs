@@ -326,7 +326,6 @@ public class Neat : Genetic
                 int b = (int)(speshee.players.Count * Rand(0.0f, breedSpeciesPercent));
                 Genome genom = Genome.Crossover(speshee.players[a].GetGenome(), speshee.players[b].GetGenome());
 
-                for (int asdagsdjknfaw=0; asdagsdjknfaw<4; asdagsdjknfaw++)
                 Genome.Mutate(genom);
 
                 ais.Add(new NeatPlayer(new NeatNet(genom)));
