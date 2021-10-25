@@ -13,9 +13,10 @@ public abstract class Game
     public abstract GameDrawer GetDrawer(MonoBehaviour m);
     public abstract float[] GetInput(int i);
 
-    public Game(GenericPlayer[] players)
+    public Game(GenericPlayer[] players, float matchTime = 50.0f)
     {
         this.players = players;
+        this.maxMatchTime = matchTime;
     }
 
     // Step the game until it finishes, return the player scores

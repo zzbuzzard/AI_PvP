@@ -5,6 +5,62 @@ using UnityEngine;
 
 public class TankGame : Game
 {
+    public class TankGameDrawer : GameDrawer
+    {
+        TankGame g;
+
+        List<GameObject> tankObjs;
+        GameObject goalObj;
+
+        public static readonly GameObject tankPrefab;
+        public static readonly GameObject goalPrefab;
+
+        static TankGameDrawer()
+        {
+            tankPrefab = Resources.Load<GameObject>("Prefabs/TankTank");
+            goalPrefab = Resources.Load<GameObject>("Prefabs/TankGoal");
+        }
+
+        public TankGameDrawer(TankGame g, MonoBehaviour m) : base(m)
+        {
+            this.g = g;
+
+            tankObjs = new List<GameObject>();
+            for (int i=0; i<g.playerObjs.Length; i++)
+            {
+                tankObjs.Add(MonoBehaviour.Instantiate(tankPrefab));
+            }
+            goalObj = MonoBehaviour.Instantiate(goalPrefab);
+        }
+
+        public override void Draw()
+        {
+            for (int i=0; i<tankObjs.Count; i++)
+            {
+                tankObjs[i].transform.position = Translate(g.playerObjs[i].location);
+                tankObjs[i].transform.rotation = Quaternion.Euler(0, 0, g.playerObjs[i].angle);
+            }
+
+            goalObj.transform.position = Translate(g.goal);
+        }
+
+        public override void Cleanup()
+        {
+            // Clean up previous simulation
+            foreach (GameObject x in tankObjs) MonoBehaviour.Destroy(x);
+            MonoBehaviour.Destroy(goalObj);
+
+            tankObjs.Clear();
+        }
+
+        // Game coords to world coords
+        public static Vector2 Translate(Vector2 pos)
+        {
+            return pos;
+        }
+    }
+
+
     private Vector2 goal;
     private System.Random random;
 
@@ -54,7 +110,7 @@ public class TankGame : Game
 
     public override GameDrawer GetDrawer(MonoBehaviour m)
     {
-        throw new System.NotImplementedException();
+        return new TankGameDrawer(this, m);
     }
 
     public const int numInputs = 9;
@@ -89,6 +145,8 @@ public class TankGame : Game
 
     public override bool Step()
     {
+        base.Step();
+
         inputArr = GetInput(0);
         for (int i=0; i<players.Length; i++)
         {
@@ -113,9 +171,9 @@ public class TankGame : Game
             physicsSystem.Step(dt);
         }
 
-        base.Step();
         if(framesPassed * spf > maxMatchTime)
         {
+            Debug.Log("Frame " + framesPassed + " and angle = " + playerObjs[0].angle);
             return true;
         }
         return false;

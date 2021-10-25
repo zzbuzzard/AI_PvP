@@ -198,10 +198,13 @@ public class Neat : Genetic
             p.fitness /= gamesPlayed;
         }
 
-        foreach (Trial t in Trial.trials)
-        {
-            p.fitness += trialWeight * ShootGame.Trial(p, t);
-        }
+        //foreach (Trial t in Trial.trials)
+        //{
+        //    p.fitness += trialWeight * ShootGame.Trial(p, t);
+        //}
+
+        // TODO: bool for usesSinglePlayer?
+        p.fitness += GameConstructor(new GenericPlayer[] { p }).SimulateGame()[0];
 
         // If it's actually any good, prioritise less complex species
         //if (p.fitness > 50.0f)

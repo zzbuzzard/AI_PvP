@@ -7,8 +7,20 @@ public class HumanPlayer : GenericPlayer
     private float[] output = new float[Constants.numOutputs];
     private int index = -1;
 
-    // ShootGame version
     public override float[] GetOutput(Game g, float[] input)
+    {
+        return GetOutputTank((TankGame)g, input);
+    }
+
+    // TankGame version
+    private float[] GetOutputTank(TankGame g, float[] input)
+    {
+        // TODO
+        return output;
+    }
+
+    // ShootGame version
+    private float[] GetOutputShoot(ShootGame g, float[] input)
     {
         // Stupid:
         if (index == -1)
@@ -35,8 +47,8 @@ public class HumanPlayer : GenericPlayer
         {
             GameDisplay.mouseClicked = false;
 
-            float x = ((ShootGame)g).info[index].x;
-            float y = ((ShootGame)g).info[index].y;
+            float x = g.info[index].x;
+            float y = g.info[index].y;
 
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector2 d = mousePos - ShootGame.ShootGameDrawer.Translate(new Vector2(x, y));

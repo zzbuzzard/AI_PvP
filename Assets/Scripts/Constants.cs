@@ -13,10 +13,11 @@ public static class Constants
     //  2) Change HumanPlayer.hs to do input for this game
     public static Game GameConstructor(GenericPlayer[] s)
     {
-        return new ShootGame(s);
+        // return new ShootGame(s);
+        return new TankGame(s[0], 3);
     }
-    public const int numInputs = ShootGame.numInputs;
-    public const int numOutputs = ShootGame.numOutputs;
+    public const int numInputs = TankGame.numInputs;
+    public const int numOutputs = TankGame.numOutputs;
 
     private static System.Random r = new System.Random(666);
     public static float Rand(float a, float b)
