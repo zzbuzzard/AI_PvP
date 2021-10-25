@@ -37,13 +37,13 @@ public class PhysObject
         this.velocity = new Vector2(0,0);
     }
 
-    Vector2 acc;
-    float spinacc;
+    Vector2 acc = new Vector2(0.0f, 0.0f);
+    float spinacc = 0.0f;
 
     public void AddForce(Force f)
     {
         acc += f.force;
-        spinacc += Vector3.Cross(f.force, f.offset).z;
+        spinacc += Vector3.Cross(new Vector3(f.force.x, f.force.y, 0f), new Vector3(f.offset.x, f.offset.y, 0f)).z;
     }
 
     public void Update(float dt)
