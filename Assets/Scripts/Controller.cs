@@ -102,10 +102,12 @@ public class Controller : MonoBehaviour
         d.gameInProgress = true;
         WaitThread();
 
-        GenericPlayer[] ps = population.GetPopulation();
-        GenericPlayer[] qs = new GenericPlayer[2] { ps[0], new HumanPlayer() };
+        d.Simulate(Constants.GameConstructor(new GenericPlayer[] { new HumanPlayer() }), true);
 
-        d.Simulate(Constants.GameConstructor(qs), true);
+        // PvP version: play against an enemy
+        //GenericPlayer[] ps = population.GetPopulation();
+        //GenericPlayer[] qs = new GenericPlayer[2] { ps[0], new HumanPlayer() };
+        //d.Simulate(Constants.GameConstructor(qs), true);
     }
 
     public void StopGame()

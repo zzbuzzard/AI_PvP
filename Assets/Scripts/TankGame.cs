@@ -69,7 +69,7 @@ public class TankGame : Game
     float maxY = 10;
 
     private static float dt = 0.01f;
-    private static float spf = 1 / 30;
+    private static float spf = 1 / 30.0f;
     private int physSteps = (int)(spf / dt);
 
     private PhysObject[] playerObjs;
@@ -166,14 +166,13 @@ public class TankGame : Game
         }
 
         //TODO more physics steps?
-        for(int i=0; i<1; i++)
+        for (int i=0; i<1; i++)
         {
             physicsSystem.Step(dt);
         }
 
-        if(framesPassed * spf > maxMatchTime)
+        if (framesPassed * spf > maxMatchTime)
         {
-            Debug.Log("Frame " + framesPassed + " and angle = " + playerObjs[0].angle);
             return true;
         }
         return false;
