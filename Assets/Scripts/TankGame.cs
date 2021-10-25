@@ -96,8 +96,15 @@ public class TankGame : Game
     }
 
     int goalsScored = 0;
+    float bonusTime = 0.0f;
+    float lastTime = 0.0f;
     private void UpdateGoal()
     {
+        goalsScored++;
+        float time = framesPassed * spf;
+        bonusTime += 1.0f / (time - lastTime);
+        lastTime = time;
+
         float x = (float)random.NextDouble();
         x *= maxX * 2;
         x -= maxX;
@@ -141,7 +148,7 @@ public class TankGame : Game
 
     public override float GetScore(int i)
     {
-        return goalsScored + 100 / framesPassed;
+        return goalsScored + bonusTime + 0.01f / Vector2.SqrMagnitude(playerObjs[i].location - goal);
     }
 
     public override bool Step()
@@ -154,7 +161,6 @@ public class TankGame : Game
             PhysObject p = playerObjs[i];
 
             if((goal - p.location).magnitude < 0.1f){
-                goalsScored++;
                 UpdateGoal();
             }
             outputArr = players[i].GetOutput(this, inputArr);
@@ -162,7 +168,7 @@ public class TankGame : Game
             Force leftForce = new Force(Vector2.left, Vector2.up * outputArr[0]);
             p.AddForce(leftForce);
 
-            Force rightForce = new Force(Vector2.right, Vector2.up * outputArr[0]);
+            Force rightForce = new Force(Vector2.right, Vector2.up * outputArr[1]);
             p.AddForce(rightForce);
         }
 
