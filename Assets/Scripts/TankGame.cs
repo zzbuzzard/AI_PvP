@@ -69,7 +69,7 @@ public class TankGame : Game
     float maxY = 10;
 
     private static float dt = 0.01f;
-    private static float spf = 1 / 30;
+    private static float spf = 1.0f / 30.0f;
     private int physSteps = (int)(spf / dt);
 
     private PhysObject[] playerObjs;
@@ -77,6 +77,7 @@ public class TankGame : Game
 
     public TankGame(GenericPlayer player, int seed) : base(new GenericPlayer[] {player})
     {
+        this.maxMatchTime = 30.0f;
         physicsSystem = new PhysicsSystem();
 
         playerObjs = new PhysObject[players.Length];
@@ -170,8 +171,7 @@ public class TankGame : Game
         {
             physicsSystem.Step(dt);
         }
-
-        if(framesPassed * spf > maxMatchTime)
+        if(framesPassed > maxMatchTime / spf)
         {
             Debug.Log("Frame " + framesPassed + " and angle = " + playerObjs[0].angle);
             return true;

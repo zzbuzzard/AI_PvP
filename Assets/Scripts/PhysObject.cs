@@ -30,12 +30,14 @@ public class PhysObject
     public List<Force> forces;
 
 
-    public PhysObject(float mass, Vector2 location, float angle=0)
+    public PhysObject(float mass, Vector2 location, float angle=0, float spinInertia=1.0f)
     {
         this.mass = mass;
         this.location = location;
         this.angle = angle;
-
+        this.spinSpeed = 0f;
+        this.spinInertia = spinInertia;
+        this.velocity = new Vector2(0,0);
         this.forces = new List<Force>();
     }
 
@@ -46,8 +48,8 @@ public class PhysObject
 
     public void Update(float dt)
     {
-        Vector2 acc = new Vector2(0, 0);
-        float spinacc = 0;
+        Vector2 acc = new Vector2(0.0f, 0f);
+        float spinacc = 0.0f;
         foreach(Force f in forces)
         {
             acc += f.force;
@@ -57,7 +59,7 @@ public class PhysObject
         acc /= mass;
         spinacc /= spinInertia;
 
-        location += dt * velocity + 0.5f * acc * dt * dt;
+        location += dt * velocity + 0.5f * dt * dt * acc;
         velocity += acc * dt;
 
         angle += dt * spinSpeed + 0.5f * spinacc * dt * dt;
