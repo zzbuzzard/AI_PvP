@@ -77,6 +77,7 @@ public class TankGame : Game
 
     public TankGame(GenericPlayer player, int seed) : base(new GenericPlayer[] {player})
     {
+        this.maxMatchTime = 30.0f;
         physicsSystem = new PhysicsSystem();
 
         playerObjs = new PhysObject[players.Length];
