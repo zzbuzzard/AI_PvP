@@ -16,16 +16,26 @@ public class TankGame : Game
     private static float spf = 1 / 30;
     private int physSteps = (int)(spf / dt);
 
+    private PhysObject[] playerObjs;
+    private const float tankMass = 1.0f;
 
     public TankGame(GenericPlayer player, int seed) : base(new GenericPlayer[] {player})
     {
         physicsSystem = new PhysicsSystem();
-        TankPlayer t = (TankPlayer)player;
-        physicsSystem.AddObject(t.physicsObject);
+
+        playerObjs = new PhysObject[players.Length];
+
+        // Populate player objects with tank physics objects
+        for (int i=0; i< playerObjs.Length; i++)
+        {
+            playerObjs[i] = new PhysObject(tankMass, new Vector2(i * 10, 0));
+            physicsSystem.AddObject(playerObjs[i]);
+        }
+
         random = new System.Random(seed);
         goal = new Vector2(0, 0);
-        UpdateGoal();
 
+        UpdateGoal();
     }
 
     int goalsScored = 0;
@@ -39,36 +49,34 @@ public class TankGame : Game
         y -= maxY;
 
         goal.x = x;
-        goal.y = y;
-        
-
+        goal.y = y;        
     }
+
     public override GameDrawer GetDrawer(MonoBehaviour m)
     {
         throw new System.NotImplementedException();
     }
 
-    const int numInputs = 9;
-    const int numOutputs = 2;
+    public const int numInputs = 9;
+    public const int numOutputs = 2;
     private static float[] inputArr = new float[numInputs];
     private static float[] outputArr = new float[numOutputs];
     
 
     public override float[] GetInput(int i)
     {
-        // Zero inputs
-        // TODO: This is acc over the top a bit, we set most directly
-        Array.Clear(inputArr, 0, numInputs);
-        TankPlayer t = (TankPlayer)players[i];
+        PhysObject p = playerObjs[i];
 
-        inputArr[0] = t.physicsObject.location.x;
-        inputArr[1] = t.physicsObject.location.y;
+        // All inputs set directly, no need to zero the array
+
+        inputArr[0] = p.location.x;
+        inputArr[1] = p.location.y;
         inputArr[2] = goal.x;
         inputArr[3] = goal.y;
-        inputArr[4] = t.physicsObject.angle;
-        inputArr[5] = t.physicsObject.spinSpeed;
-        inputArr[6] = (goal - t.physicsObject.location).magnitude;
-        inputArr[7] = Vector2.Angle(Vector2.up, goal) - t.physicsObject.angle;
+        inputArr[4] = p.angle;
+        inputArr[5] = p.spinSpeed;
+        inputArr[6] = (goal - p.location).magnitude;
+        inputArr[7] = Vector2.Angle(Vector2.up, goal) - p.angle;
         inputArr[8] = 1.0f;
 
         return inputArr;
@@ -81,23 +89,22 @@ public class TankGame : Game
 
     public override bool Step()
     {
-
         inputArr = GetInput(0);
-        foreach(TankPlayer player in players)
+        for (int i=0; i<players.Length; i++)
         {
-            if((goal - player.physicsObject.location).magnitude < 0.1f){
+            PhysObject p = playerObjs[i];
+
+            if((goal - p.location).magnitude < 0.1f){
                 goalsScored++;
                 UpdateGoal();
             }
-            outputArr = player.GetOutput(this, inputArr);
+            outputArr = players[i].GetOutput(this, inputArr);
 
             Force leftForce = new Force(Vector2.left, Vector2.up * outputArr[0]);
-            player.physicsObject.AddForce(leftForce);
-
-
+            p.AddForce(leftForce);
 
             Force rightForce = new Force(Vector2.right, Vector2.up * outputArr[0]);
-            player.physicsObject.AddForce(rightForce);
+            p.AddForce(rightForce);
         }
 
         //TODO more physics steps?

@@ -814,7 +814,6 @@ public class ShootGame : Game
         return new GameInput(hor, bjump, bshoot, angle);
     }
 
-
     class BulletComparer : IComparer<Bullet>
     {
         float cx, cy;

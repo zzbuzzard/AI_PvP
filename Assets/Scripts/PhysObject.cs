@@ -18,7 +18,6 @@ public struct Force
 
 public class PhysObject
 {
-
     public float mass;
     public float spinInertia;
 
@@ -31,7 +30,7 @@ public class PhysObject
     public List<Force> forces;
 
 
-    PhysObject(float mass, Vector2 location, float angle=0)
+    public PhysObject(float mass, Vector2 location, float angle=0)
     {
         this.mass = mass;
         this.location = location;
