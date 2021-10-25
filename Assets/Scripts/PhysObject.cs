@@ -27,9 +27,6 @@ public class PhysObject
     public float angle;
     public float spinSpeed;
 
-    public List<Force> forces;
-
-
     public PhysObject(float mass, Vector2 location, float angle=0, float spinInertia=1.0f)
     {
         this.mass = mass;
@@ -38,24 +35,19 @@ public class PhysObject
         this.spinSpeed = 0f;
         this.spinInertia = spinInertia;
         this.velocity = new Vector2(0,0);
-        this.forces = new List<Force>();
     }
+
+    Vector2 acc;
+    float spinacc;
 
     public void AddForce(Force f)
     {
-        forces.Add(f);
+        acc += f.force;
+        spinacc += Vector3.Cross(f.force, f.offset).z;
     }
 
     public void Update(float dt)
     {
-        Vector2 acc = new Vector2(0.0f, 0f);
-        float spinacc = 0.0f;
-        foreach(Force f in forces)
-        {
-            acc += f.force;
-            spinacc += Vector3.Cross(f.force, f.offset).z;
-
-        }
         acc /= mass;
         spinacc /= spinInertia;
 
@@ -65,6 +57,7 @@ public class PhysObject
         angle += dt * spinSpeed + 0.5f * spinacc * dt * dt;
         spinSpeed += dt * spinacc;
 
-        forces.Clear();
+        acc = new Vector2(0.0f, 0f);
+        spinacc = 0.0f;
     }
 }

@@ -155,7 +155,6 @@ public class TankGame : Game
     {
         base.Step();
 
-        inputArr = GetInput(0);
         for (int i=0; i<players.Length; i++)
         {
             PhysObject p = playerObjs[i];
@@ -163,7 +162,7 @@ public class TankGame : Game
             if((goal - p.location).magnitude < 0.1f){
                 UpdateGoal();
             }
-            outputArr = players[i].GetOutput(this, inputArr);
+            outputArr = players[i].GetOutput(this, GetInput(i));
 
             Force leftForce = new Force(Vector2.left, Vector2.up * outputArr[0]);
             p.AddForce(leftForce);
