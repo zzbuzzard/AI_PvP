@@ -53,7 +53,7 @@ public class PhysObject
         foreach(Force f in forces)
         {
             acc += f.force;
-            spinacc += Vector3.Cross(f.force, f.offset).z;
+            spinacc += Vector3.Cross(new Vector3(f.force.x, f.force.y, 0f), new Vector3(f.offset.x, f.offset.y, 0f)).z;
 
         }
         acc /= mass;

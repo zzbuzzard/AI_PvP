@@ -141,7 +141,7 @@ public class TankGame : Game
 
     public override float GetScore(int i)
     {
-        return goalsScored + 100 / framesPassed;
+        return 1f / (goal - playerObjs[0].location).magnitude;
     }
 
     public override bool Step()
@@ -162,7 +162,7 @@ public class TankGame : Game
             Force leftForce = new Force(Vector2.left, Vector2.up * outputArr[0]);
             p.AddForce(leftForce);
 
-            Force rightForce = new Force(Vector2.right, Vector2.up * outputArr[0]);
+            Force rightForce = new Force(Vector2.right, Vector2.up * outputArr[1]);
             p.AddForce(rightForce);
         }
 
@@ -173,7 +173,8 @@ public class TankGame : Game
         }
         if(framesPassed > maxMatchTime / spf)
         {
-            Debug.Log("Frame " + framesPassed + " and angle = " + playerObjs[0].angle);
+            //Debug.Log("Frame " + framesPassed + " and angle = " + playerObjs[0].angle);
+            //Debug.Log(playerObjs[0].location);
             return true;
         }
         return false;
