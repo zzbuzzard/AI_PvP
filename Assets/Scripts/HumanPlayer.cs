@@ -15,6 +15,7 @@ public class HumanPlayer : GenericPlayer
     // TankGame version
     private float[] GetOutputTank(TankGame g, float[] input)
     {
+        output[0] = output[1] = 0.0f;
         if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) output[0] = 1.0f;
         if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) output[1] = 1.0f;
 
@@ -67,7 +68,6 @@ public class HumanPlayer : GenericPlayer
         }
 
         output[5] = ((Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space)) ? 2.0f : 0.0f);
-
 
         return output;
 
