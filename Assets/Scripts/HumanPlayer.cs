@@ -37,36 +37,34 @@ public class HumanPlayer : GenericPlayer
 
 
         int h = 0;
-        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) h--;
-        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) h++;
+        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) output[0] = 1.0f;
+        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) output[1] = 1.0f;
 
-        output[0] = (h < 0 ? 2.0f : 0.0f); // Left
-        output[1] = (h > 0 ? 2.0f : 0.0f); // Right
+        //output[0] = (h < 0 ? 2.0f : 0.0f); // Left
+        //output[1] = (h > 0 ? 2.0f : 0.0f); // Right
 
-        if (GameDisplay.mouseClicked)
-        {
-            GameDisplay.mouseClicked = false;
+        //if (GameDisplay.mouseClicked)
+        //{
+        //    GameDisplay.mouseClicked = false;
 
-            float x = g.info[index].x;
-            float y = g.info[index].y;
+        //    float x = g.info[index].x;
+        //    float y = g.info[index].y;
 
-            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 d = mousePos - ShootGame.ShootGameDrawer.Translate(new Vector2(x, y));
+        //    Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        //    Vector2 d = mousePos - ShootGame.ShootGameDrawer.Translate(new Vector2(x, y));
 
-            output[3] = d.y;
-            output[4] = d.x;
+        //    output[3] = d.y;
+        //    output[4] = d.x;
 
-            output[2] = 2.0f;
+        //    output[2] = 2.0f;
 
-        }
-        else
-        {
-            output[2] = 0.0f;
-        }
+        //}
+        //else
+        //{
+        //    output[2] = 0.0f;
+        //}
 
-        output[5] = ((Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space)) ? 2.0f : 0.0f);
-
-
+        //output[5] = ((Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space)) ? 2.0f : 0.0f);
         return output;
 
     }
