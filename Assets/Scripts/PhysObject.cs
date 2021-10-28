@@ -35,8 +35,10 @@ public class PhysObject
     public float mass;
     public float spinInertia;
 
+
     public Vector2 location;
     public Vector2 velocity;
+    public float linear_damping = 0.2f;
 
     //Radians
     private float _angle;
@@ -60,6 +62,7 @@ public class PhysObject
 
     //Radians per sec
     public float spinSpeed;
+    public float rotationaldamping = 0.33f;
     public Matrix4x4 rotationMatrix;
 
     public PhysObject(float mass, Vector2 location, float angle=0, float spinInertia=0.5f)
@@ -80,12 +83,14 @@ public class PhysObject
     {
         f.RotateByMatrix(rotationMatrix);
         acc += new Vector2(f.force.x, f.force.y);
-        spinacc += Vector3.Cross(f.force, f.offset).z;
+        spinacc -= Vector3.Cross(f.force, f.offset).z;
     }
 
     public void Update(float dt)
     {
+        acc -= velocity * linear_damping;
         acc /= mass;
+        spinacc -= spinSpeed * rotationaldamping;
         spinacc /= spinInertia;
 
         location += dt * velocity + 0.5f * dt * dt * acc;
