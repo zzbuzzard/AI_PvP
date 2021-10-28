@@ -14,6 +14,12 @@ public struct Force
         this.offset = offset;
         this.force = force;
     }
+
+    public void RotateByMatrix(Matrix4x4 m)
+    {
+        this.offset = m.MultiplyVector(this.offset);
+        this.force = m.MultiplyVector(this.force);
+    }
 }
 
 public class PhysObject
@@ -24,13 +30,31 @@ public class PhysObject
     public Vector2 location;
     public Vector2 velocity;
 
-    public float angle;
-    public float spinSpeed;
 
-    public PhysObject(float mass, Vector2 location, float angle=0, float spinInertia=1.0f)
+    private float _angle;
+    public float angle
+    {
+        get
+        {
+            return _angle;
+        }
+        set
+        {
+            _angle = value;
+            rotationMatrix[0, 0] = Mathf.Cos(_angle);
+            rotationMatrix[0, 1] = -Mathf.Sin(_angle);
+            rotationMatrix[1, 0] = Mathf.Sin(_angle);
+            rotationMatrix[1, 1] = Mathf.Cos(_angle);
+        }
+    }
+    public float spinSpeed;
+    public Matrix4x4 rotationMatrix;
+
+    public PhysObject(float mass, Vector2 location, float angle=0, float spinInertia=0.5f)
     {
         this.mass = mass;
         this.location = location;
+        this.rotationMatrix = new Matrix4x4(Vector4.zero, Vector4.zero, Vector4.zero, Vector4.zero);
         this.angle = angle;
         this.spinSpeed = 0f;
         this.spinInertia = spinInertia;
@@ -42,6 +66,7 @@ public class PhysObject
 
     public void AddForce(Force f)
     {
+        f.RotateByMatrix(rotationMatrix);
         acc += f.force;
         spinacc += Vector3.Cross(new Vector3(f.force.x, f.force.y, 0f), new Vector3(f.offset.x, f.offset.y, 0f)).z;
     }
@@ -54,7 +79,7 @@ public class PhysObject
         location += dt * velocity + 0.5f * dt * dt * acc;
         velocity += acc * dt;
 
-        angle += dt * spinSpeed + 0.5f * spinacc * dt * dt;
+        angle += Mathf.Rad2Deg * dt * spinSpeed + 0.5f * spinacc * dt * dt;
         spinSpeed += dt * spinacc;
 
         acc = new Vector2(0.0f, 0f);

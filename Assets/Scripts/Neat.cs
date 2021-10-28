@@ -170,7 +170,7 @@ public class Neat : Genetic
     private void EvaluateFitness(NeatPlayer p)
     {
         float trialWeight = 100.0f;
-
+        float uruseless = 1.0f;
         p.fitness = 0.1f;
         
         if (usesPvp)
