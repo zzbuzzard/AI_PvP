@@ -171,6 +171,7 @@ public class Neat : Genetic
     {
         float trialWeight = 100.0f;
         float uruseless = 1.0f;
+        float uselesstoo = 0f;
         p.fitness = 0.1f;
         
         if (usesPvp)

@@ -6,19 +6,27 @@ using UnityEngine;
 
 public struct Force
 {
-    public Vector2 offset;
-    public Vector2 force;
+    public Vector3 offset;
+    public Vector3 force;
 
     public Force(Vector2 offset, Vector2 force)
     {
-        this.offset = offset;
-        this.force = force;
+        this.offset = new Vector3(offset.x, offset.y, 0f);
+        this.force = new Vector3(force.x, force.y, 0f);
     }
 
     public void RotateByMatrix(Matrix4x4 m)
     {
         this.offset = m.MultiplyVector(this.offset);
         this.force = m.MultiplyVector(this.force);
+        if(this.offset.z > 0.1f)
+        {
+            Debug.Log("AAAAAAAAAAAAA");
+        }
+        if (this.force.z > 0.1f)
+        {
+            Debug.Log("OH GOD");
+        }
     }
 }
 
@@ -30,23 +38,27 @@ public class PhysObject
     public Vector2 location;
     public Vector2 velocity;
 
-
+    //Radians
     private float _angle;
+
+    //Degrees
     public float angle
     {
         get
         {
-            return _angle;
+            return Mathf.Rad2Deg * _angle;
         }
         set
         {
-            _angle = value;
+            _angle = Mathf.Deg2Rad * value;
             rotationMatrix[0, 0] = Mathf.Cos(_angle);
             rotationMatrix[0, 1] = -Mathf.Sin(_angle);
             rotationMatrix[1, 0] = Mathf.Sin(_angle);
             rotationMatrix[1, 1] = Mathf.Cos(_angle);
         }
     }
+
+    //Radians per sec
     public float spinSpeed;
     public Matrix4x4 rotationMatrix;
 
@@ -67,8 +79,8 @@ public class PhysObject
     public void AddForce(Force f)
     {
         f.RotateByMatrix(rotationMatrix);
-        acc += f.force;
-        spinacc += Vector3.Cross(new Vector3(f.force.x, f.force.y, 0f), new Vector3(f.offset.x, f.offset.y, 0f)).z;
+        acc += new Vector2(f.force.x, f.force.y);
+        spinacc += Vector3.Cross(f.force, f.offset).z;
     }
 
     public void Update(float dt)

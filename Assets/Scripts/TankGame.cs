@@ -163,10 +163,10 @@ public class TankGame : Game
             }
             outputArr = players[i].GetOutput(this, GetInput(i));
 
-            Force leftForce = new Force(Vector2.left, Vector2.up * outputArr[0]);
+            Force leftForce = new Force(Vector2.left, Vector2.up * Mathf.Clamp(outputArr[0],-20.0f, 20.0f));
             p.AddForce(leftForce);
 
-            Force rightForce = new Force(Vector2.right, Vector2.up * outputArr[1]);
+            Force rightForce = new Force(Vector2.right, Vector2.up * Mathf.Clamp(outputArr[1], -20.0f, 20.0f));
             p.AddForce(rightForce);
         }
 
