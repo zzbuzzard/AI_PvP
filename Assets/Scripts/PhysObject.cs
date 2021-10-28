@@ -38,7 +38,7 @@ public class PhysObject
 
     public Vector2 location;
     public Vector2 velocity;
-    public float linear_damping = 0.2f;
+    public float linear_damping = 0.9f;
 
     //Radians
     private float _angle;

@@ -41,7 +41,7 @@ public static class Constants
 
     public const int goalNumSpecies = 8;
     public const float similarityVariation = 0.5f;
-    public const float similarityThreshold = 3.0f; // Was 0.5
+    public const float similarityThreshold = 1.5f; // Was 0.5
 
     public const float breedSpeciesPercent = 0.25f;
 }

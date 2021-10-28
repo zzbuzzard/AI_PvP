@@ -283,7 +283,7 @@ public class Neat : Genetic
         //    PruneAll();
         //}
 
-        if (generation % 10 >= 0)
+        if (generation % 10 == 0)
         {
             PrintInfo(species);
         }

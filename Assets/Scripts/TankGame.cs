@@ -97,12 +97,21 @@ public class TankGame : Game
     int goalsScored = 0;
     float bonusTime = 0.0f;
     float lastTime = 0.0f;
+
+    float increase_time = 20.0f;
+
     private void UpdateGoal()
     {
-        goalsScored++;
-        float time = framesPassed * spf;
-        bonusTime += 1.0f / (time - lastTime + 0.01f);
-        lastTime = time;
+        if (framesPassed > 0)
+        {
+            goalsScored++;
+            float time = framesPassed * spf;
+            bonusTime += 1.0f / (time - lastTime + 0.01f);
+            lastTime = time;
+
+            maxMatchTime += increase_time;
+            increase_time *= 0.8f;
+        }
 
         float x = (float)random.NextDouble();
         x *= maxX * 2;
@@ -147,8 +156,10 @@ public class TankGame : Game
 
     public override float GetScore(int i)
     {
-        return goalsScored + bonusTime + 0.01f / (0.01f + Vector2.SqrMagnitude(playerObjs[i].location - goal));
+        return 100 * goalsScored + bonusTime + 0.01f / (0.01f + Vector2.SqrMagnitude(playerObjs[i].location - goal));
     }
+
+    const float goal_hit_threshold = 0.5f;
 
     public override bool Step()
     {
@@ -158,7 +169,7 @@ public class TankGame : Game
         {
             PhysObject p = playerObjs[i];
 
-            if((goal - p.location).magnitude < 0.1f){
+            if((goal - p.location).magnitude < goal_hit_threshold){
                 UpdateGoal();
             }
             outputArr = players[i].GetOutput(this, GetInput(i));
