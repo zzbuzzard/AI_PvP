@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using static Constants;
+using static UnityEngine.Debug;
 
 // There is a fixed number of points in total
 // For a population of size N, there are 10N points in total.
@@ -124,10 +125,10 @@ public class Neat : Genetic
     {
         if (maxFitness > 0.1f)
         {
-            Console.WriteLine("Pruning all");
+            Log("Pruning all");
             for (int i = 0; i < ais.Count; i++) ais[i] = RemoveExcess(ais[i]);
         }
-        else Console.WriteLine("Too stupid to prune");
+        else Log("Too stupid to prune");
     }
 
     private NeatPlayer RemoveExcess(NeatPlayer p)
@@ -258,7 +259,7 @@ public class Neat : Genetic
 
         t /= ais.Count;
 
-        Console.WriteLine("Number of species: " + species.Count + " and pop size is " + ais.Count +
+        Log("Number of species: " + species.Count + " and pop size is " + ais.Count +
                   "\nMax fitness: " + maxFitness +
                   "\nStats: " + fittest.GetGenome().GenomeStats() +
                   "\nAverage fitness: " + t +
@@ -281,7 +282,7 @@ public class Neat : Genetic
         //    PruneAll();
         //}
 
-        if (generation % 10 == 0)
+        if (generation % 10 >= 0)
         {
             PrintInfo(species);
         }
@@ -343,7 +344,7 @@ public class Neat : Genetic
 
         if (generation % addNewOn == 0)
         {
-            Console.WriteLine("Adding a new enemy! There are now " + enemies.Count + " enemies");
+            Log("Adding a new enemy! There are now " + enemies.Count + " enemies");
             enemies.Add(RemoveExcess(fittest));
 
             if (enemies.Count > maxNumEnemies)
@@ -359,7 +360,7 @@ public class Neat : Genetic
 
         if (generation == 1000)
         {
-            Console.WriteLine("ENTERING PVP MODE");
+            Log("ENTERING PVP MODE");
             usesPvp = true;
         }
     }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using static UnityEngine.Debug;
 using static Constants;
 
 // Class for a non-layered neural network
@@ -81,7 +82,7 @@ public class DAGNet
     {
         if (inputs.Length != numInputs)
         {
-            Console.WriteLine("ERROR: Input array provided had size " + inputs.Length + ", expected " + numInputs);
+            LogError("ERROR: Input array provided had size " + inputs.Length + ", expected " + numInputs);
             return null;
         }
 

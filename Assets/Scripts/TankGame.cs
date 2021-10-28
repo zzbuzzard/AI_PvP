@@ -60,7 +60,6 @@ public class TankGame : Game
         }
     }
 
-
     private Vector2 goal;
     private System.Random random;
 
@@ -102,7 +101,7 @@ public class TankGame : Game
     {
         goalsScored++;
         float time = framesPassed * spf;
-        bonusTime += 1.0f / (time - lastTime);
+        bonusTime += 1.0f / (time - lastTime + 0.01f);
         lastTime = time;
 
         float x = (float)random.NextDouble();
@@ -124,7 +123,7 @@ public class TankGame : Game
     public const int numInputs = 9;
     public const int numOutputs = 2;
     private static float[] inputArr = new float[numInputs];
-    private static float[] outputArr = new float[numOutputs];
+    private static float[] outputArr;
     
 
     public override float[] GetInput(int i)
@@ -148,7 +147,7 @@ public class TankGame : Game
 
     public override float GetScore(int i)
     {
-        return goalsScored + bonusTime + 0.01f / Vector2.SqrMagnitude(playerObjs[i].location - goal);
+        return goalsScored + bonusTime + 0.01f / (0.01f + Vector2.SqrMagnitude(playerObjs[i].location - goal));
     }
 
     public override bool Step()
