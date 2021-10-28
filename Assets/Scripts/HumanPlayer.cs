@@ -16,11 +16,11 @@ public class HumanPlayer : GenericPlayer
     private float[] GetOutputTank(TankGame g, float[] input)
     {
         output[0] = output[1] = 0.0f;
-        if (Input.GetKey(KeyCode.Q)) output[0] += 1;
-        if (Input.GetKey(KeyCode.A)) output[0] -= 1;
+        if (Input.GetKey(KeyCode.Q)) output[1] += 1;
+        if (Input.GetKey(KeyCode.A)) output[1] -= 1;
 
-        if (Input.GetKey(KeyCode.P)) output[1] += 1;
-        if (Input.GetKey(KeyCode.L)) output[1] -= 1;
+        if (Input.GetKey(KeyCode.P)) output[0] += 1;
+        if (Input.GetKey(KeyCode.L)) output[0] -= 1;
 
         return output;
     }
