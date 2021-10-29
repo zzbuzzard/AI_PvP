@@ -64,8 +64,8 @@ public class TankGame : Game
     private System.Random random;
 
     private PhysicsSystem physicsSystem;
-    float maxX = 10;
-    float maxY = 10;
+    float maxX = 5;
+    float maxY = 5;
 
     private static float dt = 0.01f;
     private static float spf = 1 / 30.0f;
@@ -164,7 +164,6 @@ public class TankGame : Game
     public override bool Step()
     {
         base.Step();
-
         for (int i=0; i<players.Length; i++)
         {
             PhysObject p = playerObjs[i];

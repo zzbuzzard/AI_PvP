@@ -11,10 +11,11 @@ public static class Constants
     // To change the game type
     //  1) Change the 6 lines of code below
     //  2) Change HumanPlayer.hs to do input for this game
+    public static int seed = 0;
     public static Game GameConstructor(GenericPlayer[] s)
     {
         // return new ShootGame(s);
-        return new TankGame(s[0], 3);
+        return new TankGame(s[0], seed);
     }
     public const int numInputs = TankGame.numInputs;
     public const int numOutputs = TankGame.numOutputs;

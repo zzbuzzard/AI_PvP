@@ -38,7 +38,8 @@ public class PhysObject
 
     public Vector2 location;
     public Vector2 velocity;
-    public float linear_damping = 0.9f;
+    public float forwarddamping = 0.9f;
+    public float sidewaysdamping = 100.0f;
 
     //Radians
     private float _angle;
@@ -88,7 +89,11 @@ public class PhysObject
 
     public void Update(float dt)
     {
-        acc -= velocity * linear_damping;
+        //acc -= velocity * linear_damping;
+        Vector2 forward = (Vector2)rotationMatrix.MultiplyVector(Vector3.up);
+        Vector2 right = (Vector2)rotationMatrix.MultiplyVector(Vector3.right);
+        acc -= forward * Vector2.Dot(forward, velocity) * forwarddamping;
+        acc -= right * Vector2.Dot(right, velocity) * sidewaysdamping;
         acc /= mass;
         spinacc -= spinSpeed * rotationaldamping;
         spinacc /= spinInertia;

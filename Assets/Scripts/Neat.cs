@@ -174,31 +174,31 @@ public class Neat : Genetic
         float uselesstoo = 0f;
         p.fitness = 0.1f;
         
-        if (usesPvp)
-        {
-            int gamesPlayed = 0;
+        //if (usesPvp)
+        //{
+        //    int gamesPlayed = 0;
 
-            foreach (GenericPlayer enemy in enemies)
-            {
-                GenericPlayer[] gs;
-                Game g;
-                float score;
+        //    foreach (GenericPlayer enemy in enemies)
+        //    {
+        //        GenericPlayer[] gs;
+        //        Game g;
+        //        float score;
 
-                gs = new GenericPlayer[2] { p, enemy };
-                g = GameConstructor(gs);
-                score = g.SimulateGame()[0];       // We are first in the list
-                p.fitness += score;
-                gamesPlayed++;
+        //        gs = new GenericPlayer[2] { p, enemy };
+        //        g = GameConstructor(gs);
+        //        score = g.SimulateGame()[0];       // We are first in the list
+        //        p.fitness += score;
+        //        gamesPlayed++;
 
-                gs = new GenericPlayer[2] { enemy, p };
-                g = GameConstructor(gs);
-                score = g.SimulateGame()[1];       // We are second in the list
-                p.fitness += score;
-                gamesPlayed++;
-            }
+        //        gs = new GenericPlayer[2] { enemy, p };
+        //        g = GameConstructor(gs);
+        //        score = g.SimulateGame()[1];       // We are second in the list
+        //        p.fitness += score;
+        //        gamesPlayed++;
+        //    }
 
-            p.fitness /= gamesPlayed;
-        }
+        //    p.fitness /= gamesPlayed;
+        //}
 
         //foreach (Trial t in Trial.trials)
         //{
@@ -275,6 +275,8 @@ public class Neat : Genetic
     // Create new populations by breeding
     public override void Increment()
     {
+        //Change position generating seed;
+        Constants.seed += 1;
         List<Species> species = Speciate(ais);
         EvaluateAllFitness(species);
 
