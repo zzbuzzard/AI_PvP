@@ -7,9 +7,13 @@ using System.Threading;
 public class Controller : MonoBehaviour
 {
     public TextMeshProUGUI genText;
+    public TextMeshProUGUI gameText;
+
     public GameDisplay d;
     Genetic population;
     private Thread _t1;
+
+    private List<GenericPlayer[]> currentlyShowingMatches;
 
     int generation = 0;
     bool threadRunningGames = false;
@@ -51,6 +55,17 @@ public class Controller : MonoBehaviour
     void Update()
     {
         genText.text = "Generation " + generation;
+
+        if (d.gameInProgress)
+        {
+            gameText.enabled = true;
+            gameText.text = "Game " + d.GetCurrentGameNumber() + " / " + d.GetGameCount();
+        }
+        else
+        {
+            gameText.enabled = false;
+        }
+
         //while (true)
         //{
         //if (!d.gameInProgress)
@@ -73,10 +88,14 @@ public class Controller : MonoBehaviour
         d.gameInProgress = true;
         WaitThread();
 
-        GenericPlayer[] ps = population.GetPopulation();
-        GenericPlayer[] qs = new GenericPlayer[2] { ps[0], ps[1] };
+        List<Game> toSimulate = new List<Game>();
 
-        d.Simulate(Constants.GameConstructor(qs));
+        foreach (GenericPlayer[] ps in population.GetMatches())
+        {
+            toSimulate.Add(Constants.GameConstructor(ps));
+        }
+
+        d.Simulate(toSimulate);
     }
 
     public void ShowTrialN(int n)
@@ -90,9 +109,9 @@ public class Controller : MonoBehaviour
         d.gameInProgress = true;
         WaitThread();
 
-        GenericPlayer[] ps = population.GetPopulation();
+        List<GenericPlayer[]> ps = population.GetMatches();
         
-        d.Simulate(t.CreateTrial(ps[0]));
+        d.Simulate(t.CreateTrial(ps[0][0]));
     }
 
 

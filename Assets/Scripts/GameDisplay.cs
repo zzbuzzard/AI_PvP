@@ -4,23 +4,59 @@ using UnityEngine;
 
 public class GameDisplay : MonoBehaviour
 {
-    Game g;
-    GameDrawer d;
+    Game currentGame;
+    GameDrawer currentDrawer;
+
+    List<Game> gameList;
+    int gameListIndex = -1;
 
     public bool gameInProgress = false;
 
+    public void Simulate(List<Game> game, bool timeless = false)
+    {
+        gameList = game;
+        gameListIndex = -1;
+        NextGame(timeless);
+    }
+
+    public int GetCurrentGameNumber()
+    {
+        if (gameInProgress) return gameListIndex + 1;
+        return 0;
+    }
+
+    public int GetGameCount()
+    {
+        if (gameInProgress) return gameList.Count;
+        return 0;
+    }
+
+    private void NextGame(bool timeless = false)
+    {
+        gameListIndex++;
+
+        if (gameListIndex < gameList.Count)
+        {
+            if (currentDrawer != null)
+                currentDrawer.Cleanup();
+
+            currentGame = gameList[gameListIndex];
+            currentDrawer = currentGame.GetDrawer(this);
+
+            gameInProgress = true;
+
+            if (timeless)
+                currentGame.maxMatchTime = float.PositiveInfinity;
+        }
+        else
+        {
+            EndSimulation();
+        }
+    }
+
     public void Simulate(Game game, bool timeless = false)
     {
-        if (d != null)
-            d.Cleanup();
-
-        g = game;
-        d = g.GetDrawer(this);
-
-        gameInProgress = true;
-
-        if (timeless)
-            g.maxMatchTime = float.PositiveInfinity;
+        Simulate(new List<Game> { game }, timeless);
     }
 
 
@@ -33,19 +69,19 @@ public class GameDisplay : MonoBehaviour
     {
         if (!gameInProgress) return;
 
-        if (g.Step())
+        if (currentGame.Step())
         {
-            EndSimulation();
+            NextGame();
             return;
         }
 
-        d.Draw();
+        currentDrawer.Draw();
     }
 
     public void EndSimulation()
     {
         gameInProgress = false;
-        g = null;
+        currentGame = null;
     }
 
     // Used for HumanPlayer only, due to FixedUpdate input issues

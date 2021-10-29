@@ -38,11 +38,12 @@ public class PhysObject
 
     public Vector2 location;
     public Vector2 velocity;
-    public float forwarddamping = 0.9f;
+    public float forwarddamping = 5.0f;
     public float sidewaysdamping = 100.0f;
+    public float rotationaldamping = 5.0f;
 
     //Radians
-    private float _angle;
+    public float _angle { get; private set;  }
 
     //Degrees
     public float angle
@@ -63,7 +64,6 @@ public class PhysObject
 
     //Radians per sec
     public float spinSpeed;
-    public float rotationaldamping = 0.33f;
     public Matrix4x4 rotationMatrix;
 
     public PhysObject(float mass, Vector2 location, float angle=0, float spinInertia=0.5f)

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public abstract class Genetic
 {
     // Get the population, in no particular order
-    public abstract GenericPlayer[] GetPopulation();
+    public abstract List<GenericPlayer[]> GetMatches();
 
     // Increments the genetic algorithm, creating a new population
     public abstract void Increment();

@@ -48,16 +48,14 @@ public class RankedGenetic : Genetic
         }
     }
 
-    public override GenericPlayer[] GetPopulation()
+    public override List<GenericPlayer[]> GetMatches()
     {
-        GenericPlayer[] players = new GenericPlayer[ais.Count];
+        List<GenericPlayer[]> m = new List<GenericPlayer[]>();
 
-        for (int i=0; i<N; i++)
-        {
-            players[i] = ais[i].player;
-        }
+        m.Add(new GenericPlayer[] { ais[0].player, ais[1].player });
+        m.Add(new GenericPlayer[] { ais[1].player, ais[0].player });
 
-        return players;
+        return m;
     }
 
     // 1) Do all matches in FFA groups

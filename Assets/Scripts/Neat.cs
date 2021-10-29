@@ -74,17 +74,31 @@ public class Neat : Genetic
         }
     }
 
-    public override GenericPlayer[] GetPopulation()
+    //public override GenericPlayer[] GetPopulation()
+    //{
+    //    GenericPlayer[] players = new GenericPlayer[ais.Count];
+
+    //    ais.Sort(new NeatComparator());
+
+    //    for (int i = 0; i < ais.Count; i++)
+    //        players[i] = ais[i];
+
+    //    return players;
+    //}
+
+    public override List<GenericPlayer[]> GetMatches()
     {
-        GenericPlayer[] players = new GenericPlayer[ais.Count];
+        List<GenericPlayer[]> m = new List<GenericPlayer[]>();
 
-        ais.Sort(new NeatComparator());
+        for (int i=0; i<species.Count; i++)
+        {
+            GenericPlayer topPlayer = species[i].players[0];
+            m.Add(new GenericPlayer[] { topPlayer });
+        }
 
-        for (int i = 0; i < ais.Count; i++)
-            players[i] = ais[i];
-
-        return players;
+        return m;
     }
+
 
     private List<Species> Speciate(List<NeatPlayer> players)
     {
@@ -207,6 +221,8 @@ public class Neat : Genetic
 
         // TODO: bool for usesSinglePlayer?
         p.fitness += GameConstructor(new GenericPlayer[] { p }).SimulateGame()[0];
+        p.fitness += (new TankGame(p, Constants.seed + 1)).SimulateGame()[0];
+        p.fitness /= 2;
 
         // If it's actually any good, prioritise less complex species
         //if (p.fitness > 50.0f)
@@ -269,6 +285,8 @@ public class Neat : Genetic
             );
     }
 
+    List<Species> species;
+
     // Speciate
     // Evaluate fitness of everyone
     // Work out population size
@@ -276,8 +294,7 @@ public class Neat : Genetic
     public override void Increment()
     {
         //Change position generating seed;
-        Constants.seed += 1;
-        List<Species> species = Speciate(ais);
+        species = Speciate(ais);
         EvaluateAllFitness(species);
 
         //if (generation % 150 == 0)
@@ -288,6 +305,11 @@ public class Neat : Genetic
         if (generation % 10 == 0)
         {
             PrintInfo(species);
+        }
+
+        if (generation % 5 == 0)
+        {
+            Constants.seed += 1;
         }
 
         float averageFitness = 0;
