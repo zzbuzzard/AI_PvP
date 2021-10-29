@@ -98,7 +98,8 @@ public class TankGame : Game
     float bonusTime = 0.0f;
     float lastTime = 0.0f;
 
-    float increase_time = 20.0f;
+    float increase_time = 10.0f;
+    const float time_per_goal = 9.0f;
 
     private void UpdateGoal()
     {
@@ -106,7 +107,7 @@ public class TankGame : Game
         {
             goalsScored++;
             float time = framesPassed * spf;
-            bonusTime += 1.0f / (time - lastTime + 0.01f);
+            bonusTime += (time - lastTime) * (time - lastTime);
             lastTime = time;
 
             maxMatchTime += increase_time;
@@ -129,7 +130,7 @@ public class TankGame : Game
         return new TankGameDrawer(this, m);
     }
 
-    public const int numInputs = 9;
+    public const int numInputs = 8;
     public const int numOutputs = 2;
     private static float[] inputArr = new float[numInputs];
     private static float[] outputArr;
@@ -141,22 +142,27 @@ public class TankGame : Game
 
         // All inputs set directly, no need to zero the array
 
-        inputArr[0] = p.location.x;
-        inputArr[1] = p.location.y;
-        inputArr[2] = goal.x;
-        inputArr[3] = goal.y;
-        inputArr[4] = p.angle;
+        Vector2 off = goal - p.location;
+
+        // Offset information
+        inputArr[0] = off.x;
+        inputArr[1] = off.y;
+        inputArr[2] = off.magnitude;
+        inputArr[3] = Mathf.Atan2(off.y, off.x);  // -pi to pi
+
+        // My angle and angular momentum
+        inputArr[4] = p._angle;
         inputArr[5] = p.spinSpeed;
-        inputArr[6] = (goal - p.location).magnitude;
-        inputArr[7] = Vector2.Angle(Vector2.up, goal) - p.angle;
-        inputArr[8] = 1.0f;
+
+        inputArr[6] = p.velocity.magnitude;
+        inputArr[7] = 1.0f;
 
         return inputArr;
     }
 
     public override float GetScore(int i)
     {
-        return 100 * goalsScored + bonusTime + 0.01f / (0.01f + Vector2.SqrMagnitude(playerObjs[i].location - goal));
+        return 100 * goalsScored + 0.01f / (0.01f + Vector2.SqrMagnitude(playerObjs[i].location - goal));
     }
 
     const float goal_hit_threshold = 0.5f;
@@ -173,10 +179,10 @@ public class TankGame : Game
             }
             outputArr = players[i].GetOutput(this, GetInput(i));
 
-            Force leftForce = new Force(Vector2.left, Vector2.up * Mathf.Clamp(outputArr[0],-20.0f, 20.0f));
+            Force leftForce = new Force(Vector2.left, Vector2.up * 30.0f * Mathf.Clamp(outputArr[0],-1.0f, 1.0f));
             p.AddForce(leftForce);
 
-            Force rightForce = new Force(Vector2.right, Vector2.up * Mathf.Clamp(outputArr[1], -20.0f, 20.0f));
+            Force rightForce = new Force(Vector2.right, Vector2.up * 30.0f * Mathf.Clamp(outputArr[1], -1.0f, 1.0f));
             p.AddForce(rightForce);
         }
 
@@ -184,6 +190,11 @@ public class TankGame : Game
         for (int i=0; i<1; i++)
         {
             physicsSystem.Step(dt);
+        }
+
+        if (framesPassed * spf - lastTime > time_per_goal)
+        {
+            return true;
         }
 
         if (framesPassed * spf > maxMatchTime)
