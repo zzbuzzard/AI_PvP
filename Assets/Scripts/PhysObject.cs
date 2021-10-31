@@ -35,15 +35,14 @@ public class PhysObject
     public float mass;
     public float spinInertia;
 
-
     public Vector2 location;
     public Vector2 velocity;
-    public float forwarddamping = 5.0f;
-    public float sidewaysdamping = 100.0f;
-    public float rotationaldamping = 5.0f;
+    public float forwarddamping = 1.0f;    // 5
+    public float sidewaysdamping = 30.0f;  // 100
+    public float rotationaldamping = 3.0f; // 5
 
     //Radians
-    public float _angle { get; private set;  }
+    public float _angle { get; private set; }
 
     //Degrees
     public float angle
@@ -101,7 +100,15 @@ public class PhysObject
         location += dt * velocity + 0.5f * dt * dt * acc;
         velocity += acc * dt;
 
-        angle += Mathf.Rad2Deg * dt * spinSpeed + 0.5f * spinacc * dt * dt;
+        float my_ang = _angle + dt * spinSpeed + 0.5f * spinacc * dt * dt;
+        // Clamp to [-pi, pi]
+
+        my_ang %= 2 * Mathf.PI; // -2pi ... 2pi
+        if (my_ang < -Mathf.PI) my_ang += 2 * Mathf.PI; // pi ... 2pi
+        if (my_ang > Mathf.PI) my_ang -= 2 * Mathf.PI;  //-pi ... pi
+
+        angle = Mathf.Rad2Deg * my_ang;
+
         spinSpeed += dt * spinacc;
 
         acc = new Vector2(0.0f, 0f);

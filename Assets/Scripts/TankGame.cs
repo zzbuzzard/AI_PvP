@@ -98,8 +98,11 @@ public class TankGame : Game
     float bonusTime = 0.0f;
     float lastTime = 0.0f;
 
-    float increase_time = 10.0f;
-    const float time_per_goal = 9.0f;
+    float increase_time = 20.0f;
+    public static float time_per_goal = 9.0f;
+
+    const float min_goal_dist_sq = 5.0f * 5.0f;
+    const float max_goal_dist_sq = 12.0f * 12.0f;
 
     private void UpdateGoal()
     {
@@ -114,15 +117,22 @@ public class TankGame : Game
             increase_time *= 0.8f;
         }
 
-        float x = (float)random.NextDouble();
-        x *= maxX * 2;
-        x -= maxX;
-        float y = (float)random.NextDouble();
-        y *= maxY * 2;
-        y -= maxY;
+        for (int i=0; i<10; i++)
+        {
+            Vector2 goal2 = new Vector2((float)random.NextDouble() * maxX * 2 - maxX,
+                                        (float)random.NextDouble() * maxY * 2 - maxY);
 
-        goal.x = x;
-        goal.y = y;        
+            float d = Vector2.SqrMagnitude(goal2 - goal);
+            if (d >= min_goal_dist_sq && d <= max_goal_dist_sq)
+            {
+                goal = goal2;
+                return;
+            }
+        }
+
+        // nothing was found, boo
+        goal = new Vector2((float)random.NextDouble() * maxX * 2 - maxX,
+                           (float)random.NextDouble() * maxY * 2 - maxY);
     }
 
     public override GameDrawer GetDrawer(MonoBehaviour m)
@@ -130,7 +140,7 @@ public class TankGame : Game
         return new TankGameDrawer(this, m);
     }
 
-    public const int numInputs = 8;
+    public const int numInputs = 9;
     public const int numOutputs = 2;
     private static float[] inputArr = new float[numInputs];
     private static float[] outputArr;
@@ -144,25 +154,31 @@ public class TankGame : Game
 
         Vector2 off = goal - p.location;
 
-        // Offset information
-        inputArr[0] = off.x;
-        inputArr[1] = off.y;
+        float off_angle = Mathf.Atan2(off.y, off.x);
+        float diff_ang = Mathf.DeltaAngle(p.angle, off_angle * Mathf.Rad2Deg) * Mathf.Deg2Rad;
+
+        //inputArr[3] = Mathf.Cos(p._angle);
+        //inputArr[4] = Mathf.Sin(p._angle);
+        //inputArr[6] = p._angle;
+
+        inputArr[0] = off.x / off.magnitude;
+        inputArr[1] = off.y / off.magnitude;
         inputArr[2] = off.magnitude;
-        inputArr[3] = Mathf.Atan2(off.y, off.x);  // -pi to pi
 
-        // My angle and angular momentum
-        inputArr[4] = p._angle;
-        inputArr[5] = p.spinSpeed;
+        inputArr[3] = p._angle;
+        inputArr[4] = off_angle;
+        inputArr[5] = diff_ang;
 
-        inputArr[6] = p.velocity.magnitude;
-        inputArr[7] = 1.0f;
-
+        inputArr[6] = p.spinSpeed;
+        inputArr[7] = p.velocity.magnitude;
+        inputArr[8] = 1.0f;
+        
         return inputArr;
     }
 
     public override float GetScore(int i)
     {
-        return 100 * goalsScored + 0.01f / (0.01f + Vector2.SqrMagnitude(playerObjs[i].location - goal));
+        return Mathf.Max(0, 100 * goalsScored - bonusTime / ((1+goalsScored) * 20.0f) + 0.01f / (0.01f + Vector2.SqrMagnitude(playerObjs[i].location - goal)));
     }
 
     const float goal_hit_threshold = 0.5f;
@@ -179,10 +195,10 @@ public class TankGame : Game
             }
             outputArr = players[i].GetOutput(this, GetInput(i));
 
-            Force leftForce = new Force(Vector2.left, Vector2.up * 30.0f * Mathf.Clamp(outputArr[0],-1.0f, 1.0f));
+            Force leftForce = new Force(Vector2.left, Vector2.up * 30.0f * (float)Math.Tanh(outputArr[0]));
             p.AddForce(leftForce);
 
-            Force rightForce = new Force(Vector2.right, Vector2.up * 30.0f * Mathf.Clamp(outputArr[1], -1.0f, 1.0f));
+            Force rightForce = new Force(Vector2.right, Vector2.up * 30.0f * (float)Math.Tanh(outputArr[1]));
             p.AddForce(rightForce);
         }
 

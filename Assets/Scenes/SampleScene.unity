@@ -1088,6 +1088,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   genText: {fileID: 454447553}
+  gameText: {fileID: 2060289257}
   d: {fileID: 888700823}
 --- !u!1 &915776203
 GameObject:

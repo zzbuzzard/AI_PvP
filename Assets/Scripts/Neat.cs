@@ -184,8 +184,6 @@ public class Neat : Genetic
     private void EvaluateFitness(NeatPlayer p)
     {
         float trialWeight = 100.0f;
-        float uruseless = 1.0f;
-        float uselesstoo = 0f;
         p.fitness = 0.1f;
         
         //if (usesPvp)
@@ -287,6 +285,10 @@ public class Neat : Genetic
 
     List<Species> species;
 
+    const int scoreHistory = 20;
+    Queue<float> pastMaxScores = new Queue<float>();
+    float totalMaxScore = 0.0f;
+
     // Speciate
     // Evaluate fitness of everyone
     // Work out population size
@@ -367,14 +369,14 @@ public class Neat : Genetic
         generation++;
         previousNumSpecies = species.Count;
 
-        if (generation % addNewOn == 0)
-        {
-            Log("Adding a new enemy! There are now " + enemies.Count + " enemies");
-            enemies.Add(RemoveExcess(fittest));
+        //if (generation % addNewOn == 0)
+        //{
+        //    Log("Adding a new enemy! There are now " + enemies.Count + " enemies");
+        //    enemies.Add(RemoveExcess(fittest));
 
-            if (enemies.Count > maxNumEnemies)
-                enemies.RemoveAt(0);
-        }
+        //    if (enemies.Count > maxNumEnemies)
+        //        enemies.RemoveAt(0);
+        //}
 
 
         //if (generation == 500)
@@ -382,6 +384,25 @@ public class Neat : Genetic
         //    Debug.Log("ENTERING WALL MODE");
         //    foreach (Trial t in Trial.trials) ((TargetPractice)t).zeroMap = false;
         //}
+
+        pastMaxScores.Enqueue(maxFitness);
+        totalMaxScore += maxFitness;
+        if (pastMaxScores.Count > scoreHistory)
+        {
+            totalMaxScore -= pastMaxScores.Dequeue();
+        }
+
+        // If we're consistently getting over 20
+        if (totalMaxScore / scoreHistory > 2500.0f)
+        {
+            pastMaxScores.Clear();
+            totalMaxScore = 0.0f;
+
+            TankGame.time_per_goal *= 0.9f;
+            if (TankGame.time_per_goal < 1.0f) TankGame.time_per_goal = 0.5f;
+            Log("Reducing time to " + TankGame.time_per_goal);
+        }
+
 
         if (generation == 1000)
         {
