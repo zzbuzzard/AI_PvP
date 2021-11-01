@@ -45,6 +45,9 @@ public abstract class GameDrawer
         this.m = m;
     }
 
+    public abstract Vector2 GameToWorld(Vector2 gamePoint);
+    public abstract Vector2 WorldToGame(Vector2 worldPoint);
+
     public abstract void Draw();
     public abstract void Cleanup();
 }

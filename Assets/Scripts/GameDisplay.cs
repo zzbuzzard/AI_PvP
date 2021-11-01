@@ -91,6 +91,12 @@ public class GameDisplay : MonoBehaviour
         if (Input.GetMouseButton(0))
         {
             mouseClicked = true;
+
+            if (gameInProgress)
+            {
+                Vector2 pos = currentDrawer.WorldToGame(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+                ((TankGame)currentGame).SetGoal(pos);
+            }
         }
     }
 }

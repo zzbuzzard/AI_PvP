@@ -37,11 +37,11 @@ public class TankGame : Game
         {
             for (int i=0; i<tankObjs.Count; i++)
             {
-                tankObjs[i].transform.position = Translate(g.playerObjs[i].location);
+                tankObjs[i].transform.position = GameToWorld(g.playerObjs[i].location);
                 tankObjs[i].transform.rotation = Quaternion.Euler(0, 0, g.playerObjs[i].angle);
             }
 
-            goalObj.transform.position = Translate(g.goal);
+            goalObj.transform.position = GameToWorld(g.goal);
         }
 
         public override void Cleanup()
@@ -53,8 +53,12 @@ public class TankGame : Game
             tankObjs.Clear();
         }
 
-        // Game coords to world coords
-        public static Vector2 Translate(Vector2 pos)
+        public override Vector2 GameToWorld(Vector2 pos)
+        {
+            return pos;
+        }
+
+        public override Vector2 WorldToGame(Vector2 pos)
         {
             return pos;
         }
@@ -76,7 +80,7 @@ public class TankGame : Game
 
     public TankGame(GenericPlayer player, int seed) : base(new GenericPlayer[] {player})
     {
-        this.maxMatchTime = 30.0f;
+        this.maxMatchTime = 15.0f;
         physicsSystem = new PhysicsSystem();
 
         playerObjs = new PhysObject[players.Length];
@@ -98,8 +102,11 @@ public class TankGame : Game
     float bonusTime = 0.0f;
     float lastTime = 0.0f;
 
-    float increase_time = 20.0f;
-    public static float time_per_goal = 9.0f;
+    float goal_base_dist = 0.0f;
+    Vector2 prevGoal = Vector2.zero;
+
+    float increase_time = 7.0f;
+    public static float time_per_goal = 100.0f;
 
     const float min_goal_dist_sq = 5.0f * 5.0f;
     const float max_goal_dist_sq = 12.0f * 12.0f;
@@ -125,14 +132,18 @@ public class TankGame : Game
             float d = Vector2.SqrMagnitude(goal2 - goal);
             if (d >= min_goal_dist_sq && d <= max_goal_dist_sq)
             {
+                prevGoal = goal;
                 goal = goal2;
+                goal_base_dist = Vector2.Distance(prevGoal, goal);
                 return;
             }
         }
 
         // nothing was found, boo
+        prevGoal = goal;
         goal = new Vector2((float)random.NextDouble() * maxX * 2 - maxX,
                            (float)random.NextDouble() * maxY * 2 - maxY);
+        goal_base_dist = Vector2.Distance(prevGoal, goal);
     }
 
     public override GameDrawer GetDrawer(MonoBehaviour m)
@@ -140,7 +151,7 @@ public class TankGame : Game
         return new TankGameDrawer(this, m);
     }
 
-    public const int numInputs = 9;
+    public const int numInputs = 13;
     public const int numOutputs = 2;
     private static float[] inputArr = new float[numInputs];
     private static float[] outputArr;
@@ -154,31 +165,45 @@ public class TankGame : Game
 
         Vector2 off = goal - p.location;
 
-        float off_angle = Mathf.Atan2(off.y, off.x);
-        float diff_ang = Mathf.DeltaAngle(p.angle, off_angle * Mathf.Rad2Deg) * Mathf.Deg2Rad;
+        float off_angle  = Mathf.Atan2(off.y, off.x);
+        float vel_angle  = Mathf.Atan2(p.velocity.y, p.velocity.x);
+        float loc_angle  = Mathf.Atan2(p.location.y, p.location.x);
+
+        float diff_ang       = Mathf.DeltaAngle(p.angle,                   off_angle * Mathf.Rad2Deg) * Mathf.Deg2Rad;
+        float diff_to_centre = Mathf.DeltaAngle(p.angle,                   loc_angle * Mathf.Rad2Deg) * Mathf.Deg2Rad;
+        float diff_vel       = Mathf.DeltaAngle(vel_angle * Mathf.Rad2Deg, off_angle * Mathf.Rad2Deg) * Mathf.Deg2Rad;
 
         //inputArr[3] = Mathf.Cos(p._angle);
         //inputArr[4] = Mathf.Sin(p._angle);
         //inputArr[6] = p._angle;
 
+        // Offset: magnitude, angle, angle to turn
         inputArr[0] = off.x / off.magnitude;
         inputArr[1] = off.y / off.magnitude;
-        inputArr[2] = off.magnitude;
+        inputArr[2] = off_angle;
+        inputArr[3] = diff_ang;
 
-        inputArr[3] = p._angle;
-        inputArr[4] = off_angle;
-        inputArr[5] = diff_ang;
+        // My angle, and angle to centre
+        inputArr[4] = p._angle;
+        inputArr[5] = diff_to_centre;
 
-        inputArr[6] = p.spinSpeed;
+        // My velocity, velocity angle to center
+        inputArr[6] = vel_angle;
         inputArr[7] = p.velocity.magnitude;
-        inputArr[8] = 1.0f;
+        inputArr[8] = diff_vel;
+
+        inputArr[9] = p.location.magnitude;
+        inputArr[10] = loc_angle;
+    
+        inputArr[11] = p.spinSpeed;
+        inputArr[12] = 1.0f;
         
         return inputArr;
     }
 
     public override float GetScore(int i)
     {
-        return Mathf.Max(0, 100 * goalsScored - bonusTime / ((1+goalsScored) * 20.0f) + 0.01f / (0.01f + Vector2.SqrMagnitude(playerObjs[i].location - goal)));
+        return goalsScored + Mathf.Max((1.0f - Vector2.Distance(playerObjs[i].location, goal) / goal_base_dist), 0);
     }
 
     const float goal_hit_threshold = 0.5f;
@@ -220,4 +245,8 @@ public class TankGame : Game
         return false;
     }
 
+    public void SetGoal(Vector2 g)
+    {
+        goal = g;
+    }
 }

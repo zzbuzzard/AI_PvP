@@ -347,6 +347,8 @@ public class Neat : Genetic
             float myfit = speshee.GetFitness();
             int size = (int)(myfit / averageFitness);
 
+            if (size == 1 && species.Count > 25) size = 0;
+
             // Last one: make sure we return to the normal population size
             if (spIndex == species.Count - 1)
                 size = N - ais.Count;
@@ -362,7 +364,7 @@ public class Neat : Genetic
                 ais.Add(new NeatPlayer(new NeatNet(genom)));
             }
 
-            if (size != 0)
+            if (size > 0)
                 ais.Add(speshee.players[0]); // Keep the best one >:)
         }
 
@@ -385,21 +387,23 @@ public class Neat : Genetic
         //    foreach (Trial t in Trial.trials) ((TargetPractice)t).zeroMap = false;
         //}
 
+
         pastMaxScores.Enqueue(maxFitness);
         totalMaxScore += maxFitness;
         if (pastMaxScores.Count > scoreHistory)
-        {
             totalMaxScore -= pastMaxScores.Dequeue();
-        }
 
-        // If we're consistently getting over 20
-        if (totalMaxScore / scoreHistory > 2500.0f)
+        float minScore = maxFitness;
+        foreach (float f in pastMaxScores)
+            if (f < minScore) minScore = f;
+
+        // We got over 25, twenty times in a row :O
+        if (pastMaxScores.Count >= scoreHistory && minScore > 2500.0f)
         {
             pastMaxScores.Clear();
             totalMaxScore = 0.0f;
 
-            TankGame.time_per_goal *= 0.9f;
-            if (TankGame.time_per_goal < 1.0f) TankGame.time_per_goal = 0.5f;
+            //TankGame.time_per_goal *= 0.95f;
             Log("Reducing time to " + TankGame.time_per_goal);
         }
 

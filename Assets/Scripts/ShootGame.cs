@@ -137,7 +137,7 @@ public class ShootGame : Game
                 {
                     if (g.GetTile(x, y) == MapBlock.WALL)
                     {
-                        Vector2 pos = Translate(new Vector2(x, y));
+                        Vector2 pos = GameToWorld(new Vector2(x, y));
                         wallObjs.Add(MonoBehaviour.Instantiate(wallPrefab, pos, Quaternion.identity));
                     }
                 }
@@ -152,7 +152,7 @@ public class ShootGame : Game
                 if (g.info[i].life <= 0)
                     playerObjs[i].SetActive(false);
                 else
-                    playerObjs[i].transform.position = Translate(new Vector2(g.info[i].x, g.info[i].y));
+                    playerObjs[i].transform.position = GameToWorld(new Vector2(g.info[i].x, g.info[i].y));
             }
 
             while (bulletObjs.Count > g.bullets.Count)
@@ -163,7 +163,7 @@ public class ShootGame : Game
             for (int i = 0; i < g.bullets.Count; i++)
             {
                 if (i >= bulletObjs.Count) bulletObjs.Add(MonoBehaviour.Instantiate(bulletPrefab));
-                bulletObjs[i].transform.position = Translate(new Vector2(g.bullets[i].x, g.bullets[i].y));
+                bulletObjs[i].transform.position = GameToWorld(new Vector2(g.bullets[i].x, g.bullets[i].y));
             }
         }
 
@@ -179,11 +179,23 @@ public class ShootGame : Game
             wallObjs.Clear();
         }
 
-        // Game coords to world coords
-        public static Vector2 Translate(Vector2 pos)
+        // Eugh...
+        public static Vector2 GameToWorldStatic(Vector2 pos)
         {
             Vector2 centre = new Vector2(xsize / 2, ysize / 2);
             return pos - centre;
+        }
+
+        public override Vector2 GameToWorld(Vector2 pos)
+        {
+            Vector2 centre = new Vector2(xsize / 2, ysize / 2);
+            return pos - centre;
+        }
+
+        public override Vector2 WorldToGame(Vector2 pos)
+        {
+            Vector2 centre = new Vector2(xsize / 2, ysize / 2);
+            return pos + centre;
         }
     }
 

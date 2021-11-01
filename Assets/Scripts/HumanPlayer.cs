@@ -57,7 +57,7 @@ public class HumanPlayer : GenericPlayer
             float y = g.info[index].y;
 
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 d = mousePos - ShootGame.ShootGameDrawer.Translate(new Vector2(x, y));
+            Vector2 d = mousePos - ShootGame.ShootGameDrawer.GameToWorldStatic(new Vector2(x, y));
 
             output[3] = d.y;
             output[4] = d.x;
