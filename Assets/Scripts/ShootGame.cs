@@ -112,7 +112,7 @@ public class ShootGame : Game
             bulletPrefab = Resources.Load<GameObject>("Prefabs/ShootBullet");
         }
 
-        public ShootGameDrawer(ShootGame g, MonoBehaviour m) : base(m)
+        public ShootGameDrawer(ShootGame g)
         {
             this.g = g;
 
@@ -598,9 +598,9 @@ public class ShootGame : Game
                        );
     }
 
-    public override GameDrawer GetDrawer(MonoBehaviour m)
+    public override GameDrawer GetDrawer()
     {
-        return new ShootGameDrawer(this, m);
+        return new ShootGameDrawer(this);
     }
 
 

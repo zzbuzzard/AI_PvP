@@ -21,7 +21,7 @@ public class TankGame : Game
             goalPrefab = Resources.Load<GameObject>("Prefabs/TankGoal");
         }
 
-        public TankGameDrawer(TankGame g, MonoBehaviour m) : base(m)
+        public TankGameDrawer(TankGame g)
         {
             this.g = g;
 
@@ -146,9 +146,9 @@ public class TankGame : Game
         goal_base_dist = Vector2.Distance(prevGoal, goal);
     }
 
-    public override GameDrawer GetDrawer(MonoBehaviour m)
+    public override GameDrawer GetDrawer()
     {
-        return new TankGameDrawer(this, m);
+        return new TankGameDrawer(this);
     }
 
     public const int numInputs = 13;

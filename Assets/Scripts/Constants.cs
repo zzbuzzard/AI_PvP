@@ -1,26 +1,50 @@
 using System.Collections;
 using System.Collections.Generic;
 
+public enum GameType
+{
+    SHOOT,
+    TANK,
+    SWORD
+}
+
 public static class Constants
 {
+    // Change this line to change gamemode
+    // You may also need to modify Neat.GetMatches(), to return the correct number of players for this gamemode
+    public const GameType GAME_TYPE = GameType.SWORD;
+
+    public static readonly int[] NumInputs  = { ShootGame.numInputs,  TankGame.numInputs,  SwordGame.numInputs };
+    public static readonly int[] NumOutputs = { ShootGame.numOutputs, TankGame.numOutputs, SwordGame.numOutputs };
+
+    public static readonly int numInputs  = NumInputs[(int)GAME_TYPE];
+    public static readonly int numOutputs = NumOutputs[(int)GAME_TYPE];
+
+    public static int seed = 0;
+
+    private static System.Random r = new System.Random(666);
+
+    // (empty)
+    public static GenericPlayer swordGameEnemy = new NeatPlayer(new NeatNet(new Genome(new List<ConnectionGene>())));
+
     static Constants()
     {
 
     }
 
-    // To change the game type
-    //  1) Change the 6 lines of code below
-    //  2) Change HumanPlayer.hs to do input for this game
-    public static int seed = 0;
     public static Game GameConstructor(GenericPlayer[] s)
     {
-        // return new ShootGame(s);
-        return new TankGame(s[0], seed);
+        switch (GAME_TYPE)
+        {
+            case GameType.SHOOT:
+                return new ShootGame(s);
+            case GameType.SWORD:
+                return new SwordGame(s[0], swordGameEnemy, seed);
+            case GameType.TANK:
+                return new TankGame(s[0], seed);
+        }
     }
-    public const int numInputs = TankGame.numInputs;
-    public const int numOutputs = TankGame.numOutputs;
 
-    private static System.Random r = new System.Random(666);
     public static float Rand(float a, float b)
     {
         return ((float)r.NextDouble()) * (b - a) + a;
@@ -42,7 +66,7 @@ public static class Constants
 
     public const int goalNumSpecies = 8;
     public const float similarityVariation = 0.75f;
-    public const float similarityThreshold = 3.0f; // Was 1.5
+    public const float similarityThreshold = 2.5f; // Was 1.5
 
     public const float breedSpeciesPercent = 0.25f;
 }

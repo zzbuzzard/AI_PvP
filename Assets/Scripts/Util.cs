@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Pair<U, V> : IComparable<Pair<U, V>> where U : IComparable<U> where V : IComparable<V>
+public struct Pair<U, V> : IComparable<Pair<U, V>> where U : IComparable<U> where V : IComparable<V>
 {
     public U fst;
     public V snd;
@@ -18,6 +18,28 @@ public class Pair<U, V> : IComparable<Pair<U, V>> where U : IComparable<U> where
         int p = fst.CompareTo(other.fst);
         if (p == 0) return snd.CompareTo(other.snd);
         return p;
+    }
+}
+
+public struct Option<T>
+{
+    public bool valid;
+    public T val;
+    public Option(T val)
+    {
+        this.valid = true;
+        this.val = val;
+    }
+}
+
+public struct P<U, V>
+{
+    public U fst;
+    public V snd;
+    public P(U u, V v)
+    {
+        fst = u;
+        snd = v;
     }
 }
 

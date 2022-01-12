@@ -86,6 +86,7 @@ public class Neat : Genetic
     //    return players;
     //}
 
+    // 
     public override List<GenericPlayer[]> GetMatches()
     {
         List<GenericPlayer[]> m = new List<GenericPlayer[]>();
@@ -185,7 +186,7 @@ public class Neat : Genetic
     {
         float trialWeight = 100.0f;
         p.fitness = 0.1f;
-        
+
         //if (usesPvp)
         //{
         //    int gamesPlayed = 0;
@@ -217,9 +218,11 @@ public class Neat : Genetic
         //    p.fitness += trialWeight * ShootGame.Trial(p, t);
         //}
 
-        // TODO: bool for usesSinglePlayer?
+        // Fitness = average over 2 seeds
         p.fitness += GameConstructor(new GenericPlayer[] { p }).SimulateGame()[0];
-        p.fitness += (new TankGame(p, Constants.seed + 1)).SimulateGame()[0];
+        Constants.seed++;
+        p.fitness += GameConstructor(new GenericPlayer[] { p }).SimulateGame()[0];
+        Constants.seed--;
         p.fitness /= 2;
 
         // If it's actually any good, prioritise less complex species
@@ -303,6 +306,13 @@ public class Neat : Genetic
         //{
         //    PruneAll();
         //}
+
+        if (generation % 100 == 0)
+        {
+            Log("Changing enemy to some random thing");
+            Constants.swordGameEnemy = species[0].players[0];
+        }
+
 
         if (generation % 10 == 0)
         {
@@ -407,11 +417,10 @@ public class Neat : Genetic
             Log("Reducing time to " + TankGame.time_per_goal);
         }
 
-
-        if (generation == 1000)
-        {
-            Log("ENTERING PVP MODE");
-            usesPvp = true;
-        }
+        //if (generation == 1000)
+        //{
+        //    Log("ENTERING PVP MODE");
+        //    usesPvp = true;
+        //}
     }
 }

@@ -90,8 +90,7 @@ public class RankedGenetic : Genetic
 
             for (int j=0; j < FFA_size; j++)
             {
-                scores[j].fst = g.GetScore(j);
-                scores[j].snd = j;
+                scores[j] = new Pair<float, int>(g.GetScore(j), j);
             }
             scores.Sort();
 

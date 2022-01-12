@@ -10,7 +10,7 @@ public abstract class Game
     public float maxMatchTime;
 
     public abstract float GetScore(int i);
-    public abstract GameDrawer GetDrawer(MonoBehaviour m);
+    public abstract GameDrawer GetDrawer();
     public abstract float[] GetInput(int i);
 
     public Game(GenericPlayer[] players, float matchTime = 50.0f)
@@ -38,13 +38,6 @@ public abstract class Game
 
 public abstract class GameDrawer
 {
-    protected MonoBehaviour m;
-
-    public GameDrawer(MonoBehaviour m)
-    {
-        this.m = m;
-    }
-
     public abstract Vector2 GameToWorld(Vector2 gamePoint);
     public abstract Vector2 WorldToGame(Vector2 worldPoint);
 

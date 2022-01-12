@@ -9,7 +9,58 @@ public class HumanPlayer : GenericPlayer
 
     public override float[] GetOutput(Game g, float[] input)
     {
-        return GetOutputTank((TankGame)g, input);
+        switch (Constants.GAME_TYPE)
+        {
+            case GameType.SHOOT:
+                return GetOutputShoot((ShootGame)g, input);
+            case GameType.TANK:
+                return GetOutputTank((TankGame)g, input);
+            case GameType.SWORD:
+                return GetOutputSword((SwordGame)g, input);
+        }
+    }
+
+    // SwordGame version
+    private float[] GetOutputSword(SwordGame g, float[] input)
+    {
+        int index = (g.players[0] == this ? 0 : 1);
+
+        output[0] = output[1] = output[2] = 0;
+
+        int H = 0, V = 0;
+        if (Input.GetKey(KeyCode.UpArrow))    V++;
+        if (Input.GetKey(KeyCode.DownArrow))  V--;
+        if (Input.GetKey(KeyCode.RightArrow)) H++;
+        if (Input.GetKey(KeyCode.LeftArrow))  H--;
+
+        if (H != 0 || V != 0)
+        {
+            output[0] = 1.0f;
+            if (H != 0)
+                output[1] = Mathf.Atan2(V, H);
+            else
+                output[1] = V * Mathf.PI / 2;
+        }
+
+        if (GameDisplay.mouseClicked)
+        {
+            GameDisplay.mouseClicked = false;
+
+            SwordGame.Swinger s = g.GetSwinger(index);
+
+            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 d = mousePos - SwordGame.SwordGameDrawer.GameToWorldStatic(s.pos);
+
+            float angle = Mathf.Atan2(d.y, d.x);
+
+            output[2] = -Mathf.DeltaAngle(s.ang * Mathf.Rad2Deg, angle * Mathf.Rad2Deg) * Mathf.Deg2Rad;
+        }
+        else
+        {
+            output[2] = 0.0f;
+        }
+
+        return output;
     }
 
     // TankGame version

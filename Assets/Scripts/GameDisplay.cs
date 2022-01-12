@@ -41,7 +41,7 @@ public class GameDisplay : MonoBehaviour
                 currentDrawer.Cleanup();
 
             currentGame = gameList[gameListIndex];
-            currentDrawer = currentGame.GetDrawer(this);
+            currentDrawer = currentGame.GetDrawer();
 
             gameInProgress = true;
 
@@ -92,7 +92,7 @@ public class GameDisplay : MonoBehaviour
         {
             mouseClicked = true;
 
-            if (gameInProgress)
+            if (gameInProgress && Constants.GAME_TYPE == GameType.TANK)
             {
                 Vector2 pos = currentDrawer.WorldToGame(Camera.main.ScreenToWorldPoint(Input.mousePosition));
                 ((TankGame)currentGame).SetGoal(pos);
